@@ -14,7 +14,6 @@ export default function ResetPasswordPage() {
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,6 +29,7 @@ export default function ResetPasswordPage() {
     setLoading(true)
     try {
       // resetPasswordForEmail のリンクから来ると一時セッションが張られている
+      const supabase = createClient()
       const { error } = await supabase.auth.updateUser({ password })
       if (error) throw error
       setDone(true)
