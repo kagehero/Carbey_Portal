@@ -116,7 +116,7 @@ export default async function NewFranchisePage({
           </Link>
           <button
             type="submit"
-            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+            className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
           >
             登録する
           </button>

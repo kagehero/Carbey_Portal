@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requireAdmin } from '@/lib/auth/session'
 import SignOutButton from '@/components/SignOutButton'
+import Logo from '@/components/Logo'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await requireAdmin()
@@ -10,8 +11,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-6">
-            <Link href="/admin/franchises" className="font-bold text-gray-900">
-              Carbey Portal <span className="text-gray-400">本部</span>
+            <Link href="/admin/franchises" className="flex items-center gap-2">
+              <Logo variant="text" className="h-7 w-auto" priority />
+              <span className="rounded bg-brand-50 px-1.5 py-0.5 text-xs font-medium text-brand-700">
+                本部
+              </span>
             </Link>
             <nav className="flex gap-1">
               <Link

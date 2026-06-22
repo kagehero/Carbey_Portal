@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { requireRole } from '@/lib/auth/session'
 import { ROLE_LABEL } from '@/lib/portal/labels'
 import SignOutButton from '@/components/SignOutButton'
+import Logo from '@/components/Logo'
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   // 加盟店側はオーナー/CRM入力担当/チャット専用が利用 (admin は本部画面へ)
@@ -11,8 +12,8 @@ export default async function PortalLayout({ children }: { children: React.React
     <div className="min-h-screen bg-gray-50">
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
-          <Link href="/portal/dashboard" className="font-bold text-gray-900">
-            Carbey Portal
+          <Link href="/portal/dashboard" className="flex items-center">
+            <Logo variant="text" className="h-7 w-auto" priority />
           </Link>
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-500">

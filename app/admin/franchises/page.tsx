@@ -17,7 +17,7 @@ export default async function FranchisesPage() {
         </div>
         <Link
           href="/admin/franchises/new"
-          className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+          className="flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
         >
           <Plus className="h-4 w-4" />
           加盟店を登録

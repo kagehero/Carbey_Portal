@@ -3,7 +3,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Carbey Portal",
-  description: "Carbey Portal - 新プロジェクト",
+  description: "カーベイ FC 加盟店プラットフォーム",
+  icons: {
+    icon: "/logo-icon.png",
+    apple: "/logo-icon.png",
+  },
 };
 
 export default function RootLayout({
