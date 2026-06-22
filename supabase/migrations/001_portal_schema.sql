@@ -29,7 +29,7 @@ $$;
 --   全自動: economy / bronze / platinum / gold、半自動: semi_auto
 --   表示順は加盟金の安いものから。AI壁打ち権限は全プラン同一 (要求書 P5)。
 -- ---------------------------------------------------------------------
-create table portal.plans (
+create table if not exists portal.plans (
   code         text primary key,                      -- 'semi_auto' | 'economy' | 'bronze' | 'platinum' | 'gold'
   name         text not null,                          -- 表示名
   plan_type    text not null check (plan_type in ('semi_auto', 'full_auto')),
@@ -49,7 +49,7 @@ on conflict (code) do nothing;
 -- ---------------------------------------------------------------------
 -- 加盟店 (テナント) — 要求書 5.2
 -- ---------------------------------------------------------------------
-create table portal.franchises (
+create table if not exists portal.franchises (
   id              uuid primary key default gen_random_uuid(),
   name            text not null,                        -- 加盟店名 / 氏名
   status          text not null default 'active'
@@ -74,9 +74,10 @@ create table portal.franchises (
   updated_at      timestamptz not null default now()
 );
 
-create index idx_portal_franchises_status on portal.franchises(status);
-create index idx_portal_franchises_plan   on portal.franchises(plan_code);
+create index if not exists idx_portal_franchises_status on portal.franchises(status);
+create index if not exists idx_portal_franchises_plan   on portal.franchises(plan_code);
 
+drop trigger if exists trg_portal_franchises_touch on portal.franchises;
 create trigger trg_portal_franchises_touch
   before update on portal.franchises
   for each row execute function portal.touch_updated_at();
@@ -90,7 +91,7 @@ create trigger trg_portal_franchises_touch
 --     chat_only    : チャット専用
 --   1ユーザーは原則1メンバーシップ。本部 admin は franchise_id = null。
 -- ---------------------------------------------------------------------
-create table portal.memberships (
+create table if not exists portal.memberships (
   user_id      uuid primary key references auth.users(id) on delete cascade,
   franchise_id uuid references portal.franchises(id) on delete cascade,
   role         text not null check (role in ('admin', 'franchise', 'crm_staff', 'chat_only')),
@@ -104,9 +105,10 @@ create table portal.memberships (
   )
 );
 
-create index idx_portal_memberships_franchise on portal.memberships(franchise_id);
-create index idx_portal_memberships_role      on portal.memberships(role);
+create index if not exists idx_portal_memberships_franchise on portal.memberships(franchise_id);
+create index if not exists idx_portal_memberships_role      on portal.memberships(role);
 
+drop trigger if exists trg_portal_memberships_touch on portal.memberships;
 create trigger trg_portal_memberships_touch
   before update on portal.memberships
   for each row execute function portal.touch_updated_at();
@@ -133,7 +135,7 @@ $$;
 -- 契約情報 — 要求書 5.2 (契約日・プラン・ステータス履歴)
 --   franchises に最新値を持たせつつ、変更履歴を contracts に残す。
 -- ---------------------------------------------------------------------
-create table portal.contracts (
+create table if not exists portal.contracts (
   id           uuid primary key default gen_random_uuid(),
   franchise_id uuid not null references portal.franchises(id) on delete cascade,
   plan_code    text references portal.plans(code),
@@ -145,13 +147,13 @@ create table portal.contracts (
   created_at   timestamptz not null default now()
 );
 
-create index idx_portal_contracts_franchise on portal.contracts(franchise_id);
+create index if not exists idx_portal_contracts_franchise on portal.contracts(franchise_id);
 
 -- ---------------------------------------------------------------------
 -- CRM (基本) — 要求書 5.12 (本部管理画面で MVP 範囲実装)
 --   将来の外部CRM連携・加盟店側拡張を見据え、franchise_id でモジュール化。
 -- ---------------------------------------------------------------------
-create table portal.crm_customers (
+create table if not exists portal.crm_customers (
   id           uuid primary key default gen_random_uuid(),
   franchise_id uuid references portal.franchises(id) on delete set null,  -- 本部直管理は null 可
   name         text not null,
@@ -162,13 +164,14 @@ create table portal.crm_customers (
   updated_at   timestamptz not null default now()
 );
 
-create index idx_portal_crm_customers_franchise on portal.crm_customers(franchise_id);
+create index if not exists idx_portal_crm_customers_franchise on portal.crm_customers(franchise_id);
 
+drop trigger if exists trg_portal_crm_customers_touch on portal.crm_customers;
 create trigger trg_portal_crm_customers_touch
   before update on portal.crm_customers
   for each row execute function portal.touch_updated_at();
 
-create table portal.crm_deals (
+create table if not exists portal.crm_deals (
   id           uuid primary key default gen_random_uuid(),
   customer_id  uuid not null references portal.crm_customers(id) on delete cascade,
   status       text not null default 'open'
@@ -179,8 +182,9 @@ create table portal.crm_deals (
   updated_at   timestamptz not null default now()
 );
 
-create index idx_portal_crm_deals_customer on portal.crm_deals(customer_id);
+create index if not exists idx_portal_crm_deals_customer on portal.crm_deals(customer_id);
 
+drop trigger if exists trg_portal_crm_deals_touch on portal.crm_deals;
 create trigger trg_portal_crm_deals_touch
   before update on portal.crm_deals
   for each row execute function portal.touch_updated_at();
@@ -196,49 +200,61 @@ alter table portal.crm_deals     enable row level security;
 alter table portal.plans         enable row level security;
 
 -- plans: 認証ユーザーは誰でも読める / 書き込みは admin
+drop policy if exists portal_plans_read on portal.plans;
 create policy portal_plans_read on portal.plans
   for select using (auth.uid() is not null);
+drop policy if exists portal_plans_admin_write on portal.plans;
 create policy portal_plans_admin_write on portal.plans
   for all using (portal.is_admin(auth.uid())) with check (portal.is_admin(auth.uid()));
 
 -- franchises: admin は全件、加盟店ユーザーは自分の加盟店のみ読める。書き込みは admin。
+drop policy if exists portal_franchises_read on portal.franchises;
 create policy portal_franchises_read on portal.franchises
   for select using (
     portal.is_admin(auth.uid())
     or id = portal.current_franchise_id(auth.uid())
   );
+drop policy if exists portal_franchises_admin_write on portal.franchises;
 create policy portal_franchises_admin_write on portal.franchises
   for all using (portal.is_admin(auth.uid())) with check (portal.is_admin(auth.uid()));
 
 -- memberships: admin は全件、本人は自分の行を読める。書き込みは admin のみ。
+drop policy if exists portal_memberships_read on portal.memberships;
 create policy portal_memberships_read on portal.memberships
   for select using (
     portal.is_admin(auth.uid())
     or user_id = auth.uid()
   );
+drop policy if exists portal_memberships_admin_write on portal.memberships;
 create policy portal_memberships_admin_write on portal.memberships
   for all using (portal.is_admin(auth.uid())) with check (portal.is_admin(auth.uid()));
 
 -- contracts: admin 全件 / 加盟店は自分の分のみ読める。書き込みは admin。
+drop policy if exists portal_contracts_read on portal.contracts;
 create policy portal_contracts_read on portal.contracts
   for select using (
     portal.is_admin(auth.uid())
     or franchise_id = portal.current_franchise_id(auth.uid())
   );
+drop policy if exists portal_contracts_admin_write on portal.contracts;
 create policy portal_contracts_admin_write on portal.contracts
   for all using (portal.is_admin(auth.uid())) with check (portal.is_admin(auth.uid()));
 
 -- CRM: MVP では本部管理。admin 全件 read/write、加盟店は自分の分を読める (将来の加盟店拡張に備え franchise_id 分離)。
+drop policy if exists portal_crm_customers_admin_write on portal.crm_customers;
 create policy portal_crm_customers_admin_write on portal.crm_customers
   for all using (portal.is_admin(auth.uid())) with check (portal.is_admin(auth.uid()));
+drop policy if exists portal_crm_customers_franchise_read on portal.crm_customers;
 create policy portal_crm_customers_franchise_read on portal.crm_customers
   for select using (
     portal.is_admin(auth.uid())
     or franchise_id = portal.current_franchise_id(auth.uid())
   );
 
+drop policy if exists portal_crm_deals_admin_write on portal.crm_deals;
 create policy portal_crm_deals_admin_write on portal.crm_deals
   for all using (portal.is_admin(auth.uid())) with check (portal.is_admin(auth.uid()));
+drop policy if exists portal_crm_deals_franchise_read on portal.crm_deals;
 create policy portal_crm_deals_franchise_read on portal.crm_deals
   for select using (
     portal.is_admin(auth.uid())

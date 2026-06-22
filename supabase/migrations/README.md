@@ -22,14 +22,32 @@ CLI/セルフホストの場合は PostgREST の `db-schemas`（環境変数 `PG
 
 ## 初回セットアップ手順
 
-1. 上記マイグレーションを適用。
-2. ダッシュボードで `portal` を Exposed schemas に追加。
-3. 本部管理者にするユーザーを Auth で作成（招待 or signUp）。
-4. SQL エディタで管理者を登録:
+1. **マイグレーションを適用（再実行可能）。**
+   `001` / `002` は冪等化済み（`if not exists` / `drop ... if exists`）なので、
+   途中でエラーが出た場合や既に一部適用済みの場合でも、丸ごと貼り直して再実行してよい。
+   > 以前 `relation "plans" already exists` で止まった場合、`franchises` 以降や
+   > ヘルパー関数が未作成のことがある。冪等化済みの現行版を**最後まで再実行**すること。
 
-   ```sql
-   select portal.bootstrap_admin('<auth.users の UUID>', '本部管理者');
-   ```
+2. 本部管理者にするユーザーを Auth で作成（`scripts/create-admin.mjs` が自動で行う。
+   既に作成済みなら再利用される）。
+
+3. 管理者を登録（2通り）:
+
+   - **スクリプト（推奨・portal 公開不要）**:
+     ```bash
+     node --env-file=.env scripts/create-admin.mjs 'admin@example.com' 'password123!' '本部管理者'
+     ```
+     `002` で作成した `public.portal_bootstrap_admin` ラッパー経由で動くため、
+     `portal` を Exposed schemas に追加する前でも実行できる。
+
+   - **SQL エディタ**:
+     ```sql
+     select portal.bootstrap_admin('<auth.users の UUID>', '本部管理者');
+     ```
+
+4. **アプリを動かすには `portal` を Exposed schemas に追加**
+   （Project Settings → API → Exposed schemas に `portal` を追加）。
+   ※ 管理者登録だけなら手順3のスクリプトで完結するが、ログイン後の画面表示には公開が必須。
 
 5. 加盟店ユーザーは管理画面から（または以下で）紐付け:
 

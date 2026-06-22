@@ -25,6 +25,20 @@ $$;
 comment on function portal.bootstrap_admin is
   '最初の本部管理者を登録/昇格する。auth.users に存在する user_id を渡す。';
 
+-- public スキーマ経由ラッパー (PostgREST は public のみ公開のため、
+-- portal を Exposed schemas に追加する前でも RPC で呼べるようにする)。
+create or replace function public.portal_bootstrap_admin(p_user_id uuid, p_name text default null)
+returns void
+language sql
+security definer
+set search_path = public, portal
+as $$
+  select portal.bootstrap_admin(p_user_id, p_name);
+$$;
+
+comment on function public.portal_bootstrap_admin is
+  'portal.bootstrap_admin の public ラッパー。スキーマ未公開でも RPC 呼び出し可能にするため。';
+
 -- 加盟店ユーザーを作成済み auth ユーザーに紐付けるヘルパー
 create or replace function portal.attach_franchise_user(
   p_user_id uuid,
