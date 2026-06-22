@@ -2,8 +2,8 @@ import { MEMBER_STATUS_LABEL, PAYMENT_STATUS_LABEL } from '@/lib/portal/labels'
 import type { MemberStatus, PaymentStatus, PlanRow, MemberRow } from '@/types/database'
 
 const field =
-  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-brand-400 focus:outline-none'
-const label = 'mb-1 block text-sm font-medium text-gray-700'
+  'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-brand-400 focus:outline-none'
+const label = 'mb-1 block text-sm font-medium text-slate-700'
 
 /** 会員フォームの入力欄 (要求書 5.2 登録・管理項目)。new(member=null) と edit で共用。 */
 export default function MemberFormFields({
@@ -17,8 +17,8 @@ export default function MemberFormFields({
 }) {
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <h2 className="mb-4 text-sm font-semibold text-gray-900">基本情報</h2>
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="mb-4 text-sm font-semibold text-slate-900">基本情報</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className={label}>氏名 *</label>
@@ -47,8 +47,8 @@ export default function MemberFormFields({
         </div>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <h2 className="mb-4 text-sm font-semibold text-gray-900">陸送先</h2>
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="mb-4 text-sm font-semibold text-slate-900">陸送先</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className={label}>陸送先名</label>
@@ -65,8 +65,8 @@ export default function MemberFormFields({
         </div>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <h2 className="mb-4 text-sm font-semibold text-gray-900">契約情報</h2>
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="mb-4 text-sm font-semibold text-slate-900">契約情報</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className={label}>プラン</label>
@@ -108,8 +108,8 @@ export default function MemberFormFields({
         </div>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <h2 className="mb-4 text-sm font-semibold text-gray-900">財務情報</h2>
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="mb-4 text-sm font-semibold text-slate-900">財務情報</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <label className={label}>加盟金 (円)</label>
@@ -126,8 +126,8 @@ export default function MemberFormFields({
         </div>
       </section>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-5">
-        <h2 className="mb-4 text-sm font-semibold text-gray-900">管理メモ (内部)</h2>
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="mb-4 text-sm font-semibold text-slate-900">管理メモ (内部)</h2>
         <textarea
           name="admin_notes"
           rows={3}

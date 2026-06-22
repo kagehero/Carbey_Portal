@@ -1,51 +1,54 @@
-import Link from 'next/link'
 import { requireStaff } from '@/lib/auth/session'
 import { canAccess } from '@/lib/auth/permissions'
 import { unreadAdminCount } from '@/lib/portal/notifications'
 import { ROLE_LABEL } from '@/lib/portal/labels'
-import SignOutButton from '@/components/SignOutButton'
-import Logo from '@/components/Logo'
-import AdminNav, { type NavItem } from '@/components/AdminNav'
-import NotificationBell from '@/components/NotificationBell'
+import Sidebar, { type NavEntry } from '@/components/shell/Sidebar'
+import Topbar from '@/components/shell/Topbar'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await requireStaff()
   const unread = await unreadAdminCount()
 
-  // ロールに応じてナビ項目を出し分け (permission matrix と一致)
-  const items: NavItem[] = [{ href: '/admin/dashboard', label: 'ダッシュボード' }]
-  if (canAccess(session.role, 'members')) items.push({ href: '/admin/members', label: '会員管理' })
-  if (canAccess(session.role, 'crm')) items.push({ href: '/admin/crm', label: 'CRM' })
-  if (canAccess(session.role, 'plans')) items.push({ href: '/admin/plans', label: 'プラン管理' })
-  if (canAccess(session.role, 'settings'))
-    items.push({ href: '/admin/permissions', label: '権限' })
+  // 要求書のサイドバー構成。実装済み=リンク、Phase2-4=soon(近日)。
+  // permission matrix で権限の無い項目は出さない。
+  const primary: NavEntry[] = [
+    { href: '/admin/dashboard', label: 'ダッシュボード', icon: 'dashboard' },
+  ]
+  if (canAccess(session.role, 'members')) {
+    primary.push({ href: '/admin/members', label: '加盟店管理', icon: 'store' })
+    primary.push({ href: '/admin/contracts', label: '契約管理', icon: 'contract', soon: true })
+    primary.push({ href: '/admin/billing', label: '請求・入金管理', icon: 'billing', soon: true })
+    primary.push({ href: '/admin/onboarding', label: 'オンボーディング管理', icon: 'onboarding', soon: true })
+  }
+  primary.push({ href: '/admin/vehicles', label: '車両進捗管理', icon: 'vehicle', soon: true })
+  primary.push({ href: '/admin/orders', label: 'オーダー管理', icon: 'order', soon: true })
+  primary.push({ href: '/admin/chat', label: 'チャット', icon: 'chat', soon: true })
+  if (canAccess(session.role, 'crm')) {
+    primary.push({ href: '/admin/crm', label: 'CRM', icon: 'crm' })
+  }
+  primary.push({ href: '/admin/ai-usage', label: 'AI利用状況', icon: 'ai', soon: true })
+  primary.push({ href: '/admin/reports', label: 'レポート', icon: 'report', soon: true })
+
+  const settingsItems: NavEntry[] = []
+  if (canAccess(session.role, 'plans')) settingsItems.push({ href: '/admin/plans', label: 'プラン管理', icon: 'settings' })
+  if (canAccess(session.role, 'settings')) settingsItems.push({ href: '/admin/permissions', label: '権限管理', icon: 'settings' })
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
-          <div className="flex items-center gap-6">
-            <Link href="/admin/dashboard" className="flex items-center gap-2">
-              <Logo variant="icon" className="h-8 w-8 rounded-lg" priority />
-              <span className="rounded bg-brand-50 px-1.5 py-0.5 text-xs font-medium text-brand-700">
-                本部
-              </span>
-            </Link>
-            <AdminNav items={items} />
-          </div>
-          <div className="flex items-center gap-2">
-            <NotificationBell count={unread} href="/admin/notifications" />
-            <span className="text-sm text-gray-500">
-              {session.name ?? session.email}
-              <span className="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500">
-                {ROLE_LABEL[session.role]}
-              </span>
-            </span>
-            <SignOutButton />
-          </div>
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+    <div className="min-h-screen bg-slate-50">
+      <Sidebar
+        brandLabel="本部管理"
+        primary={primary}
+        secondary={settingsItems.length ? { label: '設定', items: settingsItems } : undefined}
+      />
+      <div className="lg:pl-64">
+        <Topbar
+          userName={session.name ?? session.email ?? 'ユーザー'}
+          roleLabel={ROLE_LABEL[session.role]}
+          notificationsHref="/admin/notifications"
+          unread={unread}
+        />
+        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+      </div>
     </div>
   )
 }
