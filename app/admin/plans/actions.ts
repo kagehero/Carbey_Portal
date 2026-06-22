@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { requireSuperAdmin } from '@/lib/auth/session'
+import { requireAdmin } from '@/lib/auth/session'
 import { createPlan, updatePlan } from '@/lib/portal/plans'
 import type { PlanType } from '@/types/database'
 
@@ -21,7 +21,7 @@ function features(v: FormDataEntryValue | null): string[] {
 }
 
 export async function createPlanAction(formData: FormData) {
-  await requireSuperAdmin()
+  await requireAdmin()
   const code = str(formData.get('code'))
   const name = str(formData.get('name'))
   if (!code || !name) redirect('/admin/plans/new?error=required')
@@ -42,7 +42,7 @@ export async function createPlanAction(formData: FormData) {
 }
 
 export async function updatePlanAction(formData: FormData) {
-  await requireSuperAdmin()
+  await requireAdmin()
   const id = str(formData.get('id'))
   if (!id) redirect('/admin/plans')
   await updatePlan(id, {

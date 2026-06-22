@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { requireStaff } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/auth/session'
 import { createMember, updateMember } from '@/lib/portal/members'
 import { notifyAdmin } from '@/lib/portal/notifications'
 import type { MemberStatus, PaymentStatus } from '@/types/database'
@@ -17,7 +17,7 @@ function num(v: FormDataEntryValue | null): number | null {
 }
 
 export async function createMemberAction(formData: FormData) {
-  await requireStaff()
+  await requireFeature('members')
   const member_name = str(formData.get('member_name'))
   if (!member_name) redirect('/admin/members/new?error=name_required')
 
@@ -25,12 +25,18 @@ export async function createMemberAction(formData: FormData) {
     member_name,
     company_name: str(formData.get('company_name')),
     email: str(formData.get('email')),
-    phone: str(formData.get('phone')),
+    phone_mobile: str(formData.get('phone_mobile')),
+    phone_landline: str(formData.get('phone_landline')),
     address: str(formData.get('address')),
+    delivery_name: str(formData.get('delivery_name')),
+    delivery_address: str(formData.get('delivery_address')),
+    delivery_contact: str(formData.get('delivery_contact')),
     plan_id: str(formData.get('plan_id')),
+    contract_date: str(formData.get('contract_date')),
     status: (str(formData.get('status')) ?? 'pending') as MemberStatus,
     joining_fee_yen: num(formData.get('joining_fee_yen')),
     monthly_fee_yen: num(formData.get('monthly_fee_yen')),
+    working_capital_yen: num(formData.get('working_capital_yen')),
     admin_notes: str(formData.get('admin_notes')),
   })
 
@@ -40,7 +46,7 @@ export async function createMemberAction(formData: FormData) {
 }
 
 export async function updateMemberAction(formData: FormData) {
-  await requireStaff()
+  await requireFeature('members')
   const id = str(formData.get('id'))
   if (!id) redirect('/admin/members')
 
@@ -48,13 +54,19 @@ export async function updateMemberAction(formData: FormData) {
     member_name: str(formData.get('member_name')) ?? undefined,
     company_name: str(formData.get('company_name')),
     email: str(formData.get('email')),
-    phone: str(formData.get('phone')),
+    phone_mobile: str(formData.get('phone_mobile')),
+    phone_landline: str(formData.get('phone_landline')),
     address: str(formData.get('address')),
+    delivery_name: str(formData.get('delivery_name')),
+    delivery_address: str(formData.get('delivery_address')),
+    delivery_contact: str(formData.get('delivery_contact')),
     plan_id: str(formData.get('plan_id')),
+    contract_date: str(formData.get('contract_date')),
     status: (str(formData.get('status')) ?? undefined) as MemberStatus | undefined,
     payment_status: (str(formData.get('payment_status')) ?? undefined) as PaymentStatus | undefined,
     joining_fee_yen: num(formData.get('joining_fee_yen')),
     monthly_fee_yen: num(formData.get('monthly_fee_yen')),
+    working_capital_yen: num(formData.get('working_capital_yen')),
     admin_notes: str(formData.get('admin_notes')),
   })
 

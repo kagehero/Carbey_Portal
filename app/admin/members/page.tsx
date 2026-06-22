@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Plus, Search } from 'lucide-react'
-import { requireStaff } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/auth/session'
 import { listMembers } from '@/lib/portal/members'
 import { listPlans } from '@/lib/portal/plans'
 import {
@@ -20,7 +20,7 @@ export default async function MembersPage({
 }: {
   searchParams: Promise<{ q?: string; status?: string; plan_id?: string }>
 }) {
-  await requireStaff()
+  await requireFeature('members')
   const sp = await searchParams
   const [members, plans] = await Promise.all([
     listMembers({ q: sp.q, status: sp.status, plan_id: sp.plan_id }),

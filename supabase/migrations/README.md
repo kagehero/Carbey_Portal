@@ -13,8 +13,8 @@ Supabase SQL エディタに順に貼り付けて実行する（または Supaba
 
 ### ロール / プラン / ステータス (新スペック)
 
-- ロール: `super_admin`（全権）/ `staff`（内部オペレーター）/ `member`（加盟店）
-- プラン: `home_dealer` / `economy` / `bronze` / `silver` / `gold`
+- ロール (要求書 5.1): `admin`（管理者・本部）/ `member`（加盟店）/ `crm_staff`（CRM入力担当）/ `chat_only`（チャット専用）
+- プラン (要求書 4.2): `home_dealer` / `economy` / `bronze` / `platinum` / `gold`
 - 会員ステータス: `pending` / `active` / `suspended` / `cancelled`
 
 ## ⚠️ 重要: PostgREST に portal スキーマを公開する
@@ -44,20 +44,20 @@ CLI/セルフホストの場合は PostgREST の `db-schemas`（環境変数 `PG
      ```bash
      node --env-file=.env scripts/create-admin.mjs 'admin@example.com' 'password123!' '本部管理者'
      ```
-     `002` で作成した `public.portal_bootstrap_super_admin` ラッパー経由で動くため、
+     `002` で作成した `public.portal_bootstrap_admin` ラッパー経由で動くため、
      `portal` を Exposed schemas に追加する前でも実行できる。
 
    - **SQL エディタ**:
      ```sql
-     select portal.bootstrap_super_admin('<auth.users の UUID>', '本部管理者', 'admin@example.com');
+     select portal.bootstrap_admin('<auth.users の UUID>', '本部管理者', 'admin@example.com');
      ```
 
 4. **アプリを動かすには `portal` を Exposed schemas に追加**
    （Project Settings → API → Exposed schemas に `portal` を追加）。
    ※ 管理者登録だけなら手順3のスクリプトで完結するが、ログイン後の画面表示には公開が必須。
 
-5. staff / member ユーザーは以下で紐付け:
+5. crm_staff / chat_only / member ユーザーは以下で紐付け:
 
    ```sql
-   select portal.attach_user('<user_id>', 'staff', 'スタッフ名', 'staff@example.com');
+   select portal.attach_user('<user_id>', 'crm_staff', 'スタッフ名', 'staff@example.com');
    ```

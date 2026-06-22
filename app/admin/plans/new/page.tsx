@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { requireSuperAdmin } from '@/lib/auth/session'
+import { requireAdmin } from '@/lib/auth/session'
 import { createPlanAction } from '../actions'
 
 export const dynamic = 'force-dynamic'
@@ -13,7 +13,7 @@ export default async function NewPlanPage({
 }: {
   searchParams: Promise<{ error?: string }>
 }) {
-  await requireSuperAdmin()
+  await requireAdmin()
   const sp = await searchParams
 
   return (

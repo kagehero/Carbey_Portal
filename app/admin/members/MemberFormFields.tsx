@@ -5,7 +5,7 @@ const field =
   'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-brand-400 focus:outline-none'
 const label = 'mb-1 block text-sm font-medium text-gray-700'
 
-/** 会員フォームの入力欄。new(member=null) と edit で共用。 */
+/** 会員フォームの入力欄 (要求書 5.2 登録・管理項目)。new(member=null) と edit で共用。 */
 export default function MemberFormFields({
   plans,
   member = null,
@@ -21,7 +21,7 @@ export default function MemberFormFields({
         <h2 className="mb-4 text-sm font-semibold text-gray-900">基本情報</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className={label}>担当者氏名 *</label>
+            <label className={label}>氏名 *</label>
             <input name="member_name" required defaultValue={member?.member_name ?? ''} className={field} />
           </div>
           <div>
@@ -33,12 +33,34 @@ export default function MemberFormFields({
             <input name="email" type="email" defaultValue={member?.email ?? ''} className={field} />
           </div>
           <div>
-            <label className={label}>電話番号</label>
-            <input name="phone" defaultValue={member?.phone ?? ''} className={field} />
+            <label className={label}>携帯番号</label>
+            <input name="phone_mobile" defaultValue={member?.phone_mobile ?? ''} className={field} />
+          </div>
+          <div>
+            <label className={label}>固定電話番号</label>
+            <input name="phone_landline" defaultValue={member?.phone_landline ?? ''} className={field} />
           </div>
           <div className="sm:col-span-2">
             <label className={label}>住所</label>
             <input name="address" defaultValue={member?.address ?? ''} className={field} />
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-gray-200 bg-white p-5">
+        <h2 className="mb-4 text-sm font-semibold text-gray-900">陸送先</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className={label}>陸送先名</label>
+            <input name="delivery_name" defaultValue={member?.delivery_name ?? ''} className={field} />
+          </div>
+          <div>
+            <label className={label}>陸送先連絡先</label>
+            <input name="delivery_contact" defaultValue={member?.delivery_contact ?? ''} className={field} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className={label}>陸送先住所</label>
+            <input name="delivery_address" defaultValue={member?.delivery_address ?? ''} className={field} />
           </div>
         </div>
       </section>
@@ -58,7 +80,11 @@ export default function MemberFormFields({
             </select>
           </div>
           <div>
-            <label className={label}>会員ステータス</label>
+            <label className={label}>契約日</label>
+            <input name="contract_date" type="date" defaultValue={member?.contract_date ?? ''} className={field} />
+          </div>
+          <div>
+            <label className={label}>契約ステータス</label>
             <select name="status" defaultValue={member?.status ?? 'pending'} className={field}>
               {(Object.keys(MEMBER_STATUS_LABEL) as MemberStatus[]).map((s) => (
                 <option key={s} value={s}>
@@ -66,14 +92,6 @@ export default function MemberFormFields({
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className={label}>加盟金 (円)</label>
-            <input name="joining_fee_yen" type="number" min="0" defaultValue={member?.joining_fee_yen ?? ''} className={field} />
-          </div>
-          <div>
-            <label className={label}>月額費用 (円)</label>
-            <input name="monthly_fee_yen" type="number" min="0" defaultValue={member?.monthly_fee_yen ?? ''} className={field} />
           </div>
           {showPaymentStatus && (
             <div>
@@ -87,6 +105,24 @@ export default function MemberFormFields({
               </select>
             </div>
           )}
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-gray-200 bg-white p-5">
+        <h2 className="mb-4 text-sm font-semibold text-gray-900">財務情報</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div>
+            <label className={label}>加盟金 (円)</label>
+            <input name="joining_fee_yen" type="number" min="0" defaultValue={member?.joining_fee_yen ?? ''} className={field} />
+          </div>
+          <div>
+            <label className={label}>月額費用 (円)</label>
+            <input name="monthly_fee_yen" type="number" min="0" defaultValue={member?.monthly_fee_yen ?? ''} className={field} />
+          </div>
+          <div>
+            <label className={label}>運転資金 (円)</label>
+            <input name="working_capital_yen" type="number" min="0" defaultValue={member?.working_capital_yen ?? ''} className={field} />
+          </div>
         </div>
       </section>
 

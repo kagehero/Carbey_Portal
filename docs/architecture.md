@@ -166,31 +166,37 @@ create policy ai_conv_admin_self_read on public.ai_conversations
 - [x] `franchise_id`（= tenant_id）を業務テーブルの分離キーとして一貫導入（論点A の前提）
 - [x] 既存 Carbey の市場テーブル（`inventories` 等）には**触れない**（参照のみ）
 
-#### Phase 1 スコープ拡張（クライアント追加要求 → 運用基盤フル実装）
+#### Phase 1 スコープ拡張 → 要求事項定義書 v1.2 厳密準拠
 
-当初の「ログイン+加盟店管理」から、**FCプラットフォームの運用基盤一式**へ Phase 1 を拡張した。
-これに伴い **スキーマを新スペックで作り直した**（fresh rewrite）。旧版（franchises/memberships/
-contracts/crm_customers/crm_deals）は破棄し、以下に置き換え:
+当初の「ログイン+加盟店管理」から **FCプラットフォームの運用基盤一式**へ拡張し、
+さらに**要求事項定義書 v1.2 に厳密準拠するようスキーマ・ロール・CRM を作り直した**。
+（前段で super_admin/staff/member + リード型CRM を実装したが、要求書原文と乖離するため修正）
 
-- **ロール**: `super_admin`（全権）/ `staff`（内部オペレーター）/ `member`（加盟店）
-- **プラン**: `home_dealer` / `economy` / `bronze` / `silver` / `gold`
-- **会員ステータス**: `pending` / `active` / `suspended` / `cancelled`
-- **CRM**: end-customer CRM ではなく **見込み客パイプライン**（`crm_leads`: inquiry→consultation→
-  proposal→contract→active、lead→member 変換）。要求書 §5.12 の end-customer CRM は将来フェーズへ。
+要求書準拠の最終形:
 
-#### Phase 1 で実装したもの（実績・新スペック）
+- **ロール (要求書 5.1)**: `admin`(管理者) / `member`(加盟店) / `crm_staff`(CRM入力担当) / `chat_only`(チャット専用)
+- **プラン (要求書 4.2)**: `home_dealer` / `economy` / `bronze` / `platinum` / `gold`（プラチナに修正）
+- **会員ステータス (要求書 5.2)**: `pending`(申込中) / `active`(有効) / `suspended`(停止) / `cancelled`(解約)
+- **加盟店項目 (要求書 5.2)**: 陸送先(名/住所/連絡先)・固定電話・契約日・運転資金 を追加
+- **CRM (要求書 5.12)**: **エンドユーザー(購入者)CRM** に修正。`crm_customers`(顧客) +
+  `crm_purchases`(購入履歴) + `crm_deals`(商談) + `crm_deal_notes`(対応履歴)
+- **パスワードリセット (要求書 5.1)**: `/forgot-password` `/reset-password` で実装
+- **ログイン履歴 (要求書 5.2)**: `/post-login` で member の `last_login_at` を更新
 
-- **DB**: `portal` スキーマ（plans / users / members / payments / crm_leads / crm_lead_notes /
-  notifications）+ RLS + ヘルパー（`is_super_admin` / `is_staff_or_admin` / `current_member_id` /
-  `bootstrap_super_admin` / `attach_user`）。GRANT は 001 に内包。
-- **認証**: middleware（セッション更新 + 保護領域リダイレクト）、ログイン、`/post-login`（ロール振り分け）、サインアウト
-- **権限**: コード定義マトリクス `lib/auth/permissions.ts`（単一の真実の源）+ ガード
-  `lib/auth/session.ts`（`requireSuperAdmin` / `requireStaff` / `requireMember` / `requireFeature`）
+#### Phase 1 で実装したもの（実績・要求書準拠）
+
+- **DB**: `portal` スキーマ（plans / users / members / payments / crm_customers / crm_purchases /
+  crm_deals / crm_deal_notes / notifications）+ RLS + ヘルパー（`is_admin` / `is_staff` / `can_crm` /
+  `current_member_id` / `bootstrap_admin` / `attach_user`）。GRANT は 001 に内包。
+- **認証**: middleware、ログイン、`/post-login`（ロール振り分け + ログイン履歴更新）、サインアウト、
+  パスワードリセット（`/forgot-password` `/reset-password`）
+- **権限**: コード定義マトリクス `lib/auth/permissions.ts`（要求書 5.1 の4ロール × 機能）+ ガード
+  `lib/auth/session.ts`（`requireAdmin` / `requireStaff` / `requireMember` / `requireFeature`）
 - **本部画面** (`/admin`): ダッシュボード（会員/プラン/売上/オーダー/チャット集計）・会員管理
-  （一覧フィルタ + 詳細 + 入金履歴 + 内部メモ）・CRM（リード一覧/追加/会員変換/フォローアップ）・
-  プラン管理（マスタ編集）・権限マトリクス画面・通知一覧（ベル + 既読）
-- **加盟店画面** (`/portal`): ダッシュボード（契約/進捗/利益）・プロフィール（基本/契約情報）
-- **ロール別ナビ**: permission matrix に基づきナビ項目を出し分け（staff は plans/permissions 非表示）
+  （一覧フィルタ + 詳細 + 陸送先/契約/財務 + 入金履歴 + 内部メモ）・CRM（顧客一覧/追加/詳細 +
+  購入履歴 + 商談 + 対応履歴）・プラン管理・権限マトリクス画面・通知一覧（ベル + 既読）
+- **加盟店画面** (`/portal`): ダッシュボード（契約/進捗/利益）・プロフィール（基本/陸送先/契約情報）
+- **ロール別ナビ**: permission matrix に基づき出し分け（crm_staff は plans/settings 非表示、chat_only は最小）
 
 #### Supabase クライアントの型解決メモ（重要・ハマりどころ）
 

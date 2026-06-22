@@ -2,60 +2,98 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { requireStaff } from '@/lib/auth/session'
-import { createLead, updateLead, addLeadNote, convertLeadToMember } from '@/lib/portal/crm'
-import { notifyAdmin } from '@/lib/portal/notifications'
-import type { LeadStatus } from '@/types/database'
+import { requireFeature } from '@/lib/auth/session'
+import {
+  createCustomer,
+  updateCustomer,
+  addPurchase,
+  createDeal,
+  updateDealStatus,
+  addDealNote,
+} from '@/lib/portal/crm'
+import type { DealStatus } from '@/types/database'
 
 function str(v: FormDataEntryValue | null): string | null {
   const s = typeof v === 'string' ? v.trim() : ''
   return s === '' ? null : s
 }
+function num(v: FormDataEntryValue | null): number | null {
+  const s = str(v)
+  return s == null ? null : Number(s)
+}
 
-export async function createLeadAction(formData: FormData) {
-  await requireStaff()
+export async function createCustomerAction(formData: FormData) {
+  await requireFeature('crm')
   const name = str(formData.get('name'))
   if (!name) redirect('/admin/crm/new?error=name_required')
-
-  const lead = await createLead({
+  const c = await createCustomer({
     name,
-    company: str(formData.get('company')),
     phone: str(formData.get('phone')),
     email: str(formData.get('email')),
-    source: str(formData.get('source')),
-    memo: str(formData.get('memo')),
-    status: (str(formData.get('status')) ?? 'inquiry') as LeadStatus,
+    address: str(formData.get('address')),
+    note: str(formData.get('note')),
   })
   revalidatePath('/admin/crm')
-  redirect(`/admin/crm/${lead.id}`)
+  redirect(`/admin/crm/${c.id}`)
 }
 
-export async function updateLeadStatusAction(formData: FormData) {
-  await requireStaff()
-  const id = str(formData.get('id'))
-  const status = str(formData.get('status')) as LeadStatus | null
-  if (!id || !status) redirect('/admin/crm')
-  await updateLead(id, { status })
-  revalidatePath(`/admin/crm/${id}`)
-  redirect(`/admin/crm/${id}`)
-}
-
-export async function addLeadNoteAction(formData: FormData) {
-  const gate = await requireStaff()
-  const id = str(formData.get('id'))
-  const body = str(formData.get('body'))
-  if (!id || !body) redirect(`/admin/crm/${id ?? ''}`)
-  await addLeadNote(id, body, gate.userId)
-  revalidatePath(`/admin/crm/${id}`)
-  redirect(`/admin/crm/${id}`)
-}
-
-export async function convertLeadAction(formData: FormData) {
-  await requireStaff()
+export async function updateCustomerAction(formData: FormData) {
+  await requireFeature('crm')
   const id = str(formData.get('id'))
   if (!id) redirect('/admin/crm')
-  const member = await convertLeadToMember(id)
-  await notifyAdmin('member_registered', 'リードを会員に変換', `${member.member_name} を会員化しました`)
-  revalidatePath('/admin/members')
-  redirect(`/admin/members/${member.id}`)
+  await updateCustomer(id, {
+    name: str(formData.get('name')) ?? undefined,
+    phone: str(formData.get('phone')),
+    email: str(formData.get('email')),
+    address: str(formData.get('address')),
+    note: str(formData.get('note')),
+  })
+  revalidatePath(`/admin/crm/${id}`)
+  redirect(`/admin/crm/${id}`)
+}
+
+export async function addPurchaseAction(formData: FormData) {
+  await requireFeature('crm')
+  const id = str(formData.get('customer_id'))
+  const vehicle = str(formData.get('vehicle_name'))
+  if (!id || !vehicle) redirect(`/admin/crm/${id ?? ''}`)
+  await addPurchase(id, vehicle, num(formData.get('price_yen')), str(formData.get('purchased_at')))
+  revalidatePath(`/admin/crm/${id}`)
+  redirect(`/admin/crm/${id}`)
+}
+
+export async function createDealAction(formData: FormData) {
+  await requireFeature('crm')
+  const customer_id = str(formData.get('customer_id'))
+  if (!customer_id) redirect('/admin/crm')
+  await createDeal({
+    customer_id,
+    title: str(formData.get('title')),
+    status: (str(formData.get('status')) ?? 'lead') as DealStatus,
+    amount_yen: num(formData.get('amount_yen')),
+  })
+  revalidatePath(`/admin/crm/${customer_id}`)
+  redirect(`/admin/crm/${customer_id}`)
+}
+
+export async function updateDealStatusAction(formData: FormData) {
+  await requireFeature('crm')
+  const id = str(formData.get('deal_id'))
+  const customer_id = str(formData.get('customer_id'))
+  const status = str(formData.get('status'))
+  if (!id || !status) redirect(`/admin/crm/${customer_id ?? ''}`)
+  await updateDealStatus(id, status)
+  revalidatePath(`/admin/crm/${customer_id}`)
+  redirect(`/admin/crm/${customer_id}`)
+}
+
+export async function addDealNoteAction(formData: FormData) {
+  const gate = await requireFeature('crm')
+  const deal_id = str(formData.get('deal_id'))
+  const customer_id = str(formData.get('customer_id'))
+  const body = str(formData.get('body'))
+  if (!deal_id || !body) redirect(`/admin/crm/${customer_id ?? ''}`)
+  await addDealNote(deal_id, body, gate.userId)
+  revalidatePath(`/admin/crm/${customer_id}`)
+  redirect(`/admin/crm/${customer_id}`)
 }

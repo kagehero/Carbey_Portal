@@ -41,8 +41,18 @@ export default async function MemberProfilePage() {
             <Row label="担当者氏名" value={member.member_name} />
             <Row label="会社名" value={member.company_name} />
             <Row label="メールアドレス" value={member.email} />
-            <Row label="電話番号" value={member.phone} />
+            <Row label="携帯番号" value={member.phone_mobile} />
+            <Row label="固定電話" value={member.phone_landline} />
             <Row label="住所" value={member.address} />
+          </dl>
+        </section>
+
+        <section className="rounded-xl border border-gray-200 bg-white p-5">
+          <h2 className="mb-3 text-sm font-semibold text-gray-900">陸送先</h2>
+          <dl>
+            <Row label="陸送先名" value={member.delivery_name} />
+            <Row label="陸送先連絡先" value={member.delivery_contact} />
+            <Row label="陸送先住所" value={member.delivery_address} />
           </dl>
         </section>
 
@@ -50,6 +60,7 @@ export default async function MemberProfilePage() {
           <h2 className="mb-3 text-sm font-semibold text-gray-900">契約情報</h2>
           <dl>
             <Row label="プラン" value={member.plan?.name} />
+            <Row label="契約日" value={member.contract_date} />
             <Row label="登録日" value={member.registration_date} />
             <Row label="月額費用" value={yen(member.monthly_fee_yen)} />
             <Row label="加盟金" value={yen(member.joining_fee_yen)} />

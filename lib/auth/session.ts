@@ -13,6 +13,11 @@ export type SessionUser = {
 
 type PortalUserPick = Pick<PortalUserRow, 'role' | 'name' | 'email'>
 
+/** 本部スタッフ (管理者 / CRM入力担当 / チャット専用) か? = 加盟店以外 */
+export function isStaff(role: UserRole): boolean {
+  return role === 'admin' || role === 'crm_staff' || role === 'chat_only'
+}
+
 /**
  * 現在のユーザーと portal.users のロールを解決する。
  * 未認証 or portal.users 未登録なら null。
@@ -41,10 +46,6 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   }
 }
 
-export function isStaffOrAdmin(role: UserRole): boolean {
-  return role === 'super_admin' || role === 'staff'
-}
-
 // ---------------------------------------------------------------------
 // Server Component / Page 用ガード (リダイレクト)
 // ---------------------------------------------------------------------
@@ -55,28 +56,28 @@ export async function requireSession(): Promise<SessionUser> {
   return session
 }
 
-/** super_admin のみ。 */
-export async function requireSuperAdmin(): Promise<SessionUser> {
+/** 管理者(本部)のみ。 */
+export async function requireAdmin(): Promise<SessionUser> {
   const session = await requireSession()
-  if (session.role !== 'super_admin') redirect('/login?error=forbidden')
+  if (session.role !== 'admin') redirect('/login?error=forbidden')
   return session
 }
 
-/** super_admin または staff (本部側)。 */
+/** 本部スタッフ (管理者/CRM入力担当/チャット専用)。 */
 export async function requireStaff(): Promise<SessionUser> {
   const session = await requireSession()
-  if (!isStaffOrAdmin(session.role)) redirect('/login?error=forbidden')
+  if (!isStaff(session.role)) redirect('/login?error=forbidden')
   return session
 }
 
-/** member (加盟店側)。 */
+/** 加盟店。 */
 export async function requireMember(): Promise<SessionUser> {
   const session = await requireSession()
   if (session.role !== 'member') redirect('/login?error=forbidden')
   return session
 }
 
-/** 機能アクセス権でガード。 */
+/** 機能アクセス権でガード (permission matrix 準拠)。 */
 export async function requireFeature(feature: Feature): Promise<SessionUser> {
   const session = await requireSession()
   if (!canAccess(session.role, feature)) redirect('/login?error=forbidden')
@@ -100,7 +101,7 @@ export async function apiRequireSession(): Promise<ApiGate> {
 export async function apiRequireStaff(): Promise<ApiGate> {
   const gate = await apiRequireSession()
   if (!gate.ok) return gate
-  if (!isStaffOrAdmin(gate.session.role)) {
+  if (!isStaff(gate.session.role)) {
     return { ok: false, response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
   }
   return gate

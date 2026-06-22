@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
-import { requireSuperAdmin } from '@/lib/auth/session'
+import { requireAdmin } from '@/lib/auth/session'
 import { listPlans } from '@/lib/portal/plans'
 import { yen } from '@/lib/portal/labels'
 import { updatePlanAction } from './actions'
@@ -11,7 +11,7 @@ const field = 'w-full rounded-lg border border-gray-300 px-2 py-1.5 text-sm focu
 
 export default async function PlansPage() {
   // プラン管理は super_admin のみ (permission matrix)
-  await requireSuperAdmin()
+  await requireAdmin()
   const plans = await listPlans()
 
   return (

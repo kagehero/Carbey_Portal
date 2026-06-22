@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
-import { requireStaff } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/auth/session'
 import { getMember, listPayments } from '@/lib/portal/members'
 import { listPlans } from '@/lib/portal/plans'
 import {
@@ -15,7 +15,7 @@ import MemberFormFields from '../MemberFormFields'
 export const dynamic = 'force-dynamic'
 
 export default async function MemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireStaff()
+  await requireFeature('members')
   const { id } = await params
   const [member, plans, payments] = await Promise.all([getMember(id), listPlans(false), listPayments(id)])
   if (!member) notFound()

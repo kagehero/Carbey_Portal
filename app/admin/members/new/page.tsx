@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { requireStaff } from '@/lib/auth/session'
+import { requireFeature } from '@/lib/auth/session'
 import { listPlans } from '@/lib/portal/plans'
 import { createMemberAction } from '../actions'
 import MemberFormFields from '../MemberFormFields'
@@ -12,7 +12,7 @@ export default async function NewMemberPage({
 }: {
   searchParams: Promise<{ error?: string }>
 }) {
-  await requireStaff()
+  await requireFeature('members')
   const [plans, sp] = await Promise.all([listPlans(false), searchParams])
 
   return (

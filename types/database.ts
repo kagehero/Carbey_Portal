@@ -1,20 +1,15 @@
 /**
- * Carbey Portal の DB 型 (portal スキーマ, 新スペック版)。
+ * Carbey Portal の DB 型 (portal スキーマ, 要求事項定義書 v1.2 準拠)。
  * supabase gen types を導入したら差し替える。
  */
 
-export type UserRole = 'super_admin' | 'staff' | 'member'
+// 要求書 5.1: 管理者 / 加盟店 / CRM入力担当 / チャット専用
+export type UserRole = 'admin' | 'member' | 'crm_staff' | 'chat_only'
 export type UserStatus = 'active' | 'suspended'
 export type MemberStatus = 'pending' | 'active' | 'suspended' | 'cancelled'
 export type PaymentStatus = 'unpaid' | 'paid' | 'overdue'
 export type PlanType = 'semi_auto' | 'full_auto'
-export type LeadStatus =
-  | 'inquiry'
-  | 'consultation'
-  | 'proposal'
-  | 'contract'
-  | 'active'
-  | 'suspended'
+export type DealStatus = 'lead' | 'negotiating' | 'quoted' | 'won' | 'lost'
 
 export type PlanRow = {
   id: string
@@ -57,13 +52,19 @@ export type MemberRow = {
   user_id: string | null
   company_name: string | null
   member_name: string
-  phone: string | null
+  phone_mobile: string | null
+  phone_landline: string | null
   email: string | null
   address: string | null
+  delivery_name: string | null
+  delivery_address: string | null
+  delivery_contact: string | null
   plan_id: string | null
+  contract_date: string | null
   status: MemberStatus
   joining_fee_yen: number | null
   monthly_fee_yen: number | null
+  working_capital_yen: number | null
   payment_status: PaymentStatus
   registration_date: string
   last_login_at: string | null
@@ -77,13 +78,19 @@ export type MemberInsert = {
   user_id?: string | null
   company_name?: string | null
   member_name: string
-  phone?: string | null
+  phone_mobile?: string | null
+  phone_landline?: string | null
   email?: string | null
   address?: string | null
+  delivery_name?: string | null
+  delivery_address?: string | null
+  delivery_contact?: string | null
   plan_id?: string | null
+  contract_date?: string | null
   status?: MemberStatus
   joining_fee_yen?: number | null
   monthly_fee_yen?: number | null
+  working_capital_yen?: number | null
   payment_status?: PaymentStatus
   registration_date?: string
   admin_notes?: string | null
@@ -100,33 +107,57 @@ export type PaymentRow = {
   created_at: string
 }
 
-export type CrmLeadRow = {
+// CRM (要求書 5.12): エンドユーザー(購入者)・購入履歴・商談
+export type CrmCustomerRow = {
   id: string
+  member_id: string | null
   name: string
-  company: string | null
   phone: string | null
   email: string | null
-  status: LeadStatus
-  source: string | null
-  memo: string | null
-  converted_member_id: string | null
+  address: string | null
+  note: string | null
+  created_at: string
+  updated_at: string
+}
+export type CrmCustomerInsert = {
+  member_id?: string | null
+  name: string
+  phone?: string | null
+  email?: string | null
+  address?: string | null
+  note?: string | null
+}
+
+export type CrmPurchaseRow = {
+  id: string
+  customer_id: string
+  vehicle_name: string | null
+  price_yen: number | null
+  purchased_at: string | null
+  note: string | null
+  created_at: string
+}
+
+export type CrmDealRow = {
+  id: string
+  customer_id: string
+  title: string | null
+  status: DealStatus
+  amount_yen: number | null
   assigned_to: string | null
   created_at: string
   updated_at: string
 }
-export type CrmLeadInsert = {
-  name: string
-  company?: string | null
-  phone?: string | null
-  email?: string | null
-  status?: LeadStatus
-  source?: string | null
-  memo?: string | null
+export type CrmDealInsert = {
+  customer_id: string
+  title?: string | null
+  status?: DealStatus
+  amount_yen?: number | null
 }
 
-export type CrmLeadNoteRow = {
+export type CrmDealNoteRow = {
   id: string
-  lead_id: string
+  deal_id: string
   author_id: string | null
   body: string
   created_at: string
@@ -150,8 +181,10 @@ export type Database = {
       users: { Row: PortalUserRow; Insert: Partial<PortalUserRow>; Update: Partial<PortalUserRow> }
       members: { Row: MemberRow; Insert: MemberInsert; Update: Partial<MemberInsert> }
       payments: { Row: PaymentRow; Insert: Partial<PaymentRow>; Update: Partial<PaymentRow> }
-      crm_leads: { Row: CrmLeadRow; Insert: CrmLeadInsert; Update: Partial<CrmLeadInsert> }
-      crm_lead_notes: { Row: CrmLeadNoteRow; Insert: Partial<CrmLeadNoteRow>; Update: Partial<CrmLeadNoteRow> }
+      crm_customers: { Row: CrmCustomerRow; Insert: CrmCustomerInsert; Update: Partial<CrmCustomerInsert> }
+      crm_purchases: { Row: CrmPurchaseRow; Insert: Partial<CrmPurchaseRow>; Update: Partial<CrmPurchaseRow> }
+      crm_deals: { Row: CrmDealRow; Insert: CrmDealInsert; Update: Partial<CrmDealInsert> }
+      crm_deal_notes: { Row: CrmDealNoteRow; Insert: Partial<CrmDealNoteRow>; Update: Partial<CrmDealNoteRow> }
       notifications: { Row: NotificationRow; Insert: Partial<NotificationRow>; Update: Partial<NotificationRow> }
     }
     Views: Record<string, never>

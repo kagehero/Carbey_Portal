@@ -163,9 +163,9 @@ function LoginForm() {
             </div>
 
             <div className="flex justify-end">
-              <button type="button" className="text-sm text-brand-600 hover:text-brand-700 hover:underline">
+              <a href="/forgot-password" className="text-sm text-brand-600 hover:text-brand-700 hover:underline">
                 パスワードをお忘れですか？
-              </button>
+              </a>
             </div>
 
             <button

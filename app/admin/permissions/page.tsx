@@ -1,12 +1,12 @@
 import { Check, X } from 'lucide-react'
-import { requireSuperAdmin } from '@/lib/auth/session'
+import { requireAdmin } from '@/lib/auth/session'
 import { FEATURES, FEATURE_LABEL, ACCESS_MATRIX, type Access } from '@/lib/auth/permissions'
 import { ROLE_LABEL } from '@/lib/portal/labels'
 import type { UserRole } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
 
-const ROLES: UserRole[] = ['super_admin', 'staff', 'member']
+const ROLES: UserRole[] = ['admin', 'crm_staff', 'chat_only', 'member']
 
 function AccessCell({ access }: { access: Access }) {
   if (access === 'full') return <Check className="mx-auto h-4 w-4 text-green-600" />
@@ -17,7 +17,7 @@ function AccessCell({ access }: { access: Access }) {
 }
 
 export default async function PermissionsPage() {
-  await requireSuperAdmin()
+  await requireAdmin()
 
   return (
     <div>
