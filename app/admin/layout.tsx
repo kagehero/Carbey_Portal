@@ -26,7 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
           <div className="flex items-center gap-6">
             <Link href="/admin/dashboard" className="flex items-center gap-2">
-              <Logo variant="text" className="h-7 w-auto" priority />
+              <Logo variant="icon" className="h-8 w-8 rounded-lg" priority />
               <span className="rounded bg-brand-50 px-1.5 py-0.5 text-xs font-medium text-brand-700">
                 本部
               </span>

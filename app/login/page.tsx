@@ -110,7 +110,7 @@ function LoginForm() {
         <div className="w-full max-w-sm">
           {/* モバイル用ロゴ (lg 未満) */}
           <div className="mb-8 flex flex-col items-center lg:items-start">
-            <Logo variant="text" className="h-9 w-auto lg:hidden" priority />
+            <Logo variant="icon" className="h-11 w-11 rounded-xl lg:hidden" priority />
             <h2 className="mt-4 text-2xl font-bold text-gray-900">ログイン</h2>
             <p className="mt-1 text-sm text-gray-500">アカウント情報を入力してください</p>
           </div>
