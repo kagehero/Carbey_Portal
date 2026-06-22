@@ -1,7 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
-import { requireRole } from '@/lib/auth/session'
-import { FRANCHISE_STATUS_LABEL } from '@/lib/portal/labels'
-import type { FranchiseRow } from '@/types/database'
+import { requireMember } from '@/lib/auth/session'
+import { getMemberByUserId } from '@/lib/portal/members'
+import { MEMBER_STATUS_LABEL, yen } from '@/lib/portal/labels'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,75 +13,70 @@ function Widget({ title, children }: { title: string; children: React.ReactNode 
   )
 }
 
-function Placeholder({ phase }: { phase: string }) {
-  return <p className="text-sm text-gray-400">{phase} で実装予定</p>
-}
+export default async function MemberDashboardPage() {
+  const session = await requireMember()
+  const member = await getMemberByUserId(session.userId)
 
-export default async function DashboardPage() {
-  const session = await requireRole(['franchise', 'crm_staff', 'chat_only'])
-
-  // RLS により自分の加盟店のみ取得できる
-  let franchise: FranchiseRow | null = null
-  if (session.franchiseId) {
-    const supabase = await createClient()
-    const { data } = await supabase
-      .from('franchises')
-      .select('*')
-      .eq('id', session.franchiseId)
-      .maybeSingle<FranchiseRow>()
-    franchise = data
-  }
+  const onboardingPct = member?.onboarding_total
+    ? Math.round((member.onboarding_done / member.onboarding_total) * 100)
+    : 0
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-bold text-gray-900">ダッシュボード</h1>
+      {/* Welcome */}
+      <div className="mb-6">
+        <p className="text-sm text-gray-500">ようこそ</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {member?.company_name ?? member?.member_name ?? session.name ?? 'ゲスト'}
+        </h1>
+      </div>
 
-      {!franchise && (
+      {!member && (
         <div className="mb-6 rounded-lg bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-          加盟店情報が紐付いていません。本部にお問い合わせください。
+          会員情報が紐付いていません。本部にお問い合わせください。
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <Widget title="契約プラン">
-          {franchise ? (
+          {member ? (
             <div>
-              <p className="text-lg font-semibold text-gray-900">{franchise.plan_code ?? '未設定'}</p>
-              <p className="mt-0.5 text-sm text-gray-500">
-                {FRANCHISE_STATUS_LABEL[franchise.status]}
-              </p>
+              <p className="text-lg font-semibold text-gray-900">{member.plan?.name ?? '未設定'}</p>
+              <p className="mt-0.5 text-sm text-gray-500">{MEMBER_STATUS_LABEL[member.status]}</p>
             </div>
           ) : (
-            <Placeholder phase="—" />
+            <p className="text-sm text-gray-400">—</p>
           )}
         </Widget>
 
-        <Widget title="オンボーディング進捗">
-          {franchise ? (
-            <p className={`text-lg font-semibold ${franchise.onboarding_completed ? 'text-green-700' : 'text-yellow-700'}`}>
-              {franchise.onboarding_completed ? '完了' : '未完了'}
-            </p>
+        <Widget title="スタートアップ進捗">
+          {member ? (
+            <div>
+              <p className="text-lg font-semibold text-gray-900">
+                {member.onboarding_done} / {member.onboarding_total} 完了
+              </p>
+              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                <div className="h-full rounded-full bg-brand-500" style={{ width: `${onboardingPct}%` }} />
+              </div>
+            </div>
           ) : (
-            <Placeholder phase="—" />
+            <p className="text-sm text-gray-400">—</p>
           )}
-          <p className="mt-1 text-xs text-gray-400">フローチャート本体は Phase 2</p>
+          <p className="mt-2 text-xs text-gray-400">フロー本体は Phase 2</p>
         </Widget>
 
-        <Widget title="販売件数サマリー">
-          <Placeholder phase="Phase 3" />
-        </Widget>
-
-        <Widget title="利益状況">
-          <Placeholder phase="Phase 3" />
+        <Widget title="今月の利益">
+          <p className="text-lg font-semibold text-gray-900">{yen(0)}</p>
+          <p className="mt-1 text-xs text-gray-400">Phase 3 で実装</p>
         </Widget>
 
         <Widget title="AI 壁打ち">
-          <Placeholder phase="Phase 4" />
+          <p className="text-sm text-gray-400">Phase 4 で実装</p>
           <p className="mt-1 text-xs text-gray-400">オンボーディング完了後に解放</p>
         </Widget>
 
         <Widget title="お知らせ">
-          <Placeholder phase="Phase 2" />
+          <p className="text-sm text-gray-400">Phase 2 で実装</p>
         </Widget>
       </div>
     </div>

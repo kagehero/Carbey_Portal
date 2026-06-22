@@ -1,113 +1,159 @@
 /**
- * Carbey Portal の DB 型 (portal スキーマ)。
- *
- * 既存 Carbey の自動生成型とは別に、本システムが使う portal スキーマだけを
- * 手書きで定義する。supabase gen types を導入したら差し替える。
+ * Carbey Portal の DB 型 (portal スキーマ, 新スペック版)。
+ * supabase gen types を導入したら差し替える。
  */
 
-export type FranchiseStatus = 'active' | 'suspended' | 'terminated'
-export type MembershipRole = 'admin' | 'franchise' | 'crm_staff' | 'chat_only'
+export type UserRole = 'super_admin' | 'staff' | 'member'
+export type UserStatus = 'active' | 'suspended'
+export type MemberStatus = 'pending' | 'active' | 'suspended' | 'cancelled'
+export type PaymentStatus = 'unpaid' | 'paid' | 'overdue'
 export type PlanType = 'semi_auto' | 'full_auto'
-export type ContractStatus = 'active' | 'suspended' | 'terminated'
-export type DealStatus = 'open' | 'in_progress' | 'won' | 'lost'
+export type LeadStatus =
+  | 'inquiry'
+  | 'consultation'
+  | 'proposal'
+  | 'contract'
+  | 'active'
+  | 'suspended'
 
 export type PlanRow = {
+  id: string
   code: string
   name: string
   plan_type: PlanType
+  monthly_fee_yen: number
+  joining_fee_yen: number
   display_order: number
   description: string | null
+  features: string[]
+  is_active: boolean
   created_at: string
+  updated_at: string
+}
+export type PlanInsert = {
+  code: string
+  name: string
+  plan_type: PlanType
+  monthly_fee_yen?: number
+  joining_fee_yen?: number
+  display_order?: number
+  description?: string | null
+  features?: string[]
+  is_active?: boolean
 }
 
-export type FranchiseRow = {
+export type PortalUserRow = {
   id: string
-  name: string
-  status: FranchiseStatus
-  plan_code: string | null
-  address: string | null
-  phone_mobile: string | null
-  phone_landline: string | null
+  name: string | null
   email: string | null
-  delivery_name: string | null
-  delivery_address: string | null
-  delivery_contact: string | null
-  contract_date: string | null
-  monthly_fee_yen: number | null
-  onboarding_completed: boolean
+  role: UserRole
+  status: UserStatus
   created_at: string
   updated_at: string
 }
 
-export type FranchiseInsert = {
-  id?: string
-  name: string
-  status?: FranchiseStatus
-  plan_code?: string | null
-  address?: string | null
-  phone_mobile?: string | null
-  phone_landline?: string | null
-  email?: string | null
-  delivery_name?: string | null
-  delivery_address?: string | null
-  delivery_contact?: string | null
-  contract_date?: string | null
-  monthly_fee_yen?: number | null
-  onboarding_completed?: boolean
-}
-
-export type MembershipRow = {
-  user_id: string
-  franchise_id: string | null
-  role: MembershipRole
-  display_name: string | null
-  created_at: string
-  updated_at: string
-}
-
-export type ContractRow = {
+export type MemberRow = {
   id: string
-  franchise_id: string
-  plan_code: string | null
-  status: ContractStatus
-  started_at: string
-  ended_at: string | null
-  note: string | null
-  created_at: string
-}
-
-export type CrmCustomerRow = {
-  id: string
-  franchise_id: string | null
-  name: string
+  user_id: string | null
+  company_name: string | null
+  member_name: string
   phone: string | null
   email: string | null
-  note: string | null
+  address: string | null
+  plan_id: string | null
+  status: MemberStatus
+  joining_fee_yen: number | null
+  monthly_fee_yen: number | null
+  payment_status: PaymentStatus
+  registration_date: string
+  last_login_at: string | null
+  onboarding_total: number
+  onboarding_done: number
+  admin_notes: string | null
   created_at: string
   updated_at: string
 }
+export type MemberInsert = {
+  user_id?: string | null
+  company_name?: string | null
+  member_name: string
+  phone?: string | null
+  email?: string | null
+  address?: string | null
+  plan_id?: string | null
+  status?: MemberStatus
+  joining_fee_yen?: number | null
+  monthly_fee_yen?: number | null
+  payment_status?: PaymentStatus
+  registration_date?: string
+  admin_notes?: string | null
+}
 
-export type CrmDealRow = {
+export type PaymentRow = {
   id: string
-  customer_id: string
-  status: DealStatus
-  title: string | null
+  member_id: string
+  amount_yen: number
+  payment_date: string
+  kind: 'joining' | 'monthly' | 'other'
+  status: 'pending' | 'confirmed' | 'failed'
   note: string | null
   created_at: string
+}
+
+export type CrmLeadRow = {
+  id: string
+  name: string
+  company: string | null
+  phone: string | null
+  email: string | null
+  status: LeadStatus
+  source: string | null
+  memo: string | null
+  converted_member_id: string | null
+  assigned_to: string | null
+  created_at: string
   updated_at: string
+}
+export type CrmLeadInsert = {
+  name: string
+  company?: string | null
+  phone?: string | null
+  email?: string | null
+  status?: LeadStatus
+  source?: string | null
+  memo?: string | null
+}
+
+export type CrmLeadNoteRow = {
+  id: string
+  lead_id: string
+  author_id: string | null
+  body: string
+  created_at: string
+}
+
+export type NotificationRow = {
+  id: string
+  user_id: string | null
+  audience: 'user' | 'admin'
+  kind: string
+  title: string
+  message: string | null
+  is_read: boolean
+  created_at: string
 }
 
 export type Database = {
   portal: {
     Tables: {
-      plans: { Row: PlanRow; Insert: Partial<PlanRow>; Update: Partial<PlanRow> }
-      franchises: { Row: FranchiseRow; Insert: FranchiseInsert; Update: Partial<FranchiseInsert> }
-      memberships: { Row: MembershipRow; Insert: Partial<MembershipRow>; Update: Partial<MembershipRow> }
-      contracts: { Row: ContractRow; Insert: Partial<ContractRow>; Update: Partial<ContractRow> }
-      crm_customers: { Row: CrmCustomerRow; Insert: Partial<CrmCustomerRow>; Update: Partial<CrmCustomerRow> }
-      crm_deals: { Row: CrmDealRow; Insert: Partial<CrmDealRow>; Update: Partial<CrmDealRow> }
+      plans: { Row: PlanRow; Insert: PlanInsert; Update: Partial<PlanInsert> }
+      users: { Row: PortalUserRow; Insert: Partial<PortalUserRow>; Update: Partial<PortalUserRow> }
+      members: { Row: MemberRow; Insert: MemberInsert; Update: Partial<MemberInsert> }
+      payments: { Row: PaymentRow; Insert: Partial<PaymentRow>; Update: Partial<PaymentRow> }
+      crm_leads: { Row: CrmLeadRow; Insert: CrmLeadInsert; Update: Partial<CrmLeadInsert> }
+      crm_lead_notes: { Row: CrmLeadNoteRow; Insert: Partial<CrmLeadNoteRow>; Update: Partial<CrmLeadNoteRow> }
+      notifications: { Row: NotificationRow; Insert: Partial<NotificationRow>; Update: Partial<NotificationRow> }
     }
-    // GenericSchema を満たすため空オブジェクトにする (never だと Schema 推論が壊れる)
     Views: Record<string, never>
     Functions: Record<string, never>
     Enums: Record<string, never>

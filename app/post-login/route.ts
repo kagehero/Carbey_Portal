@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(redirect, origin))
   }
 
-  const dest = session.role === 'admin' ? '/admin/franchises' : '/portal/dashboard'
+  const staff = session.role === 'super_admin' || session.role === 'staff'
+  const dest = staff ? '/admin/dashboard' : '/portal/dashboard'
   return NextResponse.redirect(new URL(dest, origin))
 }

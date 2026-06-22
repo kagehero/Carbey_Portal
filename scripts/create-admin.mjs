@@ -58,14 +58,14 @@ if (createRes.ok) {
   }
 }
 
-// 2. public.portal_bootstrap_admin RPC (public ラッパー。portal 未公開でも呼べる)
-const rpcRes = await fetch(`${url}/rest/v1/rpc/portal_bootstrap_admin`, {
+// 2. public.portal_bootstrap_super_admin RPC (public ラッパー。portal 未公開でも呼べる)
+const rpcRes = await fetch(`${url}/rest/v1/rpc/portal_bootstrap_super_admin`, {
   method: 'POST',
   headers,
-  body: JSON.stringify({ p_user_id: userId, p_name: name }),
+  body: JSON.stringify({ p_user_id: userId, p_name: name, p_email: email }),
 })
 if (!rpcRes.ok) {
-  throw new Error(`portal_bootstrap_admin failed: ${rpcRes.status} ${await rpcRes.text()}`)
+  throw new Error(`portal_bootstrap_super_admin failed: ${rpcRes.status} ${await rpcRes.text()}`)
 }
 
-console.log(`✅ ${email} を本部管理者として登録しました (user_id=${userId})`)
+console.log(`✅ ${email} を super_admin として登録しました (user_id=${userId})`)

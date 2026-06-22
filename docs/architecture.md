@@ -166,13 +166,31 @@ create policy ai_conv_admin_self_read on public.ai_conversations
 - [x] `franchise_id`（= tenant_id）を業務テーブルの分離キーとして一貫導入（論点A の前提）
 - [x] 既存 Carbey の市場テーブル（`inventories` 等）には**触れない**（参照のみ）
 
-#### Phase 1 で実装したもの（実績）
+#### Phase 1 スコープ拡張（クライアント追加要求 → 運用基盤フル実装）
 
-- **DB**: `portal` スキーマ（plans / franchises / memberships / contracts / crm_customers / crm_deals）+ RLS + ヘルパー関数（`portal.is_admin` / `portal.current_franchise_id` / `bootstrap_admin` / `attach_franchise_user`）
+当初の「ログイン+加盟店管理」から、**FCプラットフォームの運用基盤一式**へ Phase 1 を拡張した。
+これに伴い **スキーマを新スペックで作り直した**（fresh rewrite）。旧版（franchises/memberships/
+contracts/crm_customers/crm_deals）は破棄し、以下に置き換え:
+
+- **ロール**: `super_admin`（全権）/ `staff`（内部オペレーター）/ `member`（加盟店）
+- **プラン**: `home_dealer` / `economy` / `bronze` / `silver` / `gold`
+- **会員ステータス**: `pending` / `active` / `suspended` / `cancelled`
+- **CRM**: end-customer CRM ではなく **見込み客パイプライン**（`crm_leads`: inquiry→consultation→
+  proposal→contract→active、lead→member 変換）。要求書 §5.12 の end-customer CRM は将来フェーズへ。
+
+#### Phase 1 で実装したもの（実績・新スペック）
+
+- **DB**: `portal` スキーマ（plans / users / members / payments / crm_leads / crm_lead_notes /
+  notifications）+ RLS + ヘルパー（`is_super_admin` / `is_staff_or_admin` / `current_member_id` /
+  `bootstrap_super_admin` / `attach_user`）。GRANT は 001 に内包。
 - **認証**: middleware（セッション更新 + 保護領域リダイレクト）、ログイン、`/post-login`（ロール振り分け）、サインアウト
-- **権限ゲート**: `lib/auth/session.ts`（`requireAdmin` / `requireRole` / `apiRequireRole` など）
-- **本部画面**: `/admin/franchises`（一覧・詳細・登録フォーム、Server Action）
-- **加盟店画面**: `/portal/dashboard`（要求書 5.4 のウィジェット雛形。Phase 2/3/4 はプレースホルダ）
+- **権限**: コード定義マトリクス `lib/auth/permissions.ts`（単一の真実の源）+ ガード
+  `lib/auth/session.ts`（`requireSuperAdmin` / `requireStaff` / `requireMember` / `requireFeature`）
+- **本部画面** (`/admin`): ダッシュボード（会員/プラン/売上/オーダー/チャット集計）・会員管理
+  （一覧フィルタ + 詳細 + 入金履歴 + 内部メモ）・CRM（リード一覧/追加/会員変換/フォローアップ）・
+  プラン管理（マスタ編集）・権限マトリクス画面・通知一覧（ベル + 既読）
+- **加盟店画面** (`/portal`): ダッシュボード（契約/進捗/利益）・プロフィール（基本/契約情報）
+- **ロール別ナビ**: permission matrix に基づきナビ項目を出し分け（staff は plans/permissions 非表示）
 
 #### Supabase クライアントの型解決メモ（重要・ハマりどころ）
 

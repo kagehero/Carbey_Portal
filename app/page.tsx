@@ -4,5 +4,6 @@ import { getSessionUser } from '@/lib/auth/session'
 export default async function Home() {
   const session = await getSessionUser()
   if (!session) redirect('/login')
-  redirect(session.role === 'admin' ? '/admin/franchises' : '/portal/dashboard')
+  const staff = session.role === 'super_admin' || session.role === 'staff'
+  redirect(staff ? '/admin/dashboard' : '/portal/dashboard')
 }
