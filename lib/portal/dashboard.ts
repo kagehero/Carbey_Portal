@@ -54,3 +54,22 @@ export async function getAdminStats(): Promise<AdminStats> {
     unreadChats: 0, // Phase 2
   }
 }
+
+export type RecentMember = {
+  id: string
+  member_name: string
+  company_name: string | null
+  status: string
+  created_at: string
+}
+
+/** 最近登録された加盟店 (ダッシュボードの最近の動き)。 */
+export async function getRecentMembers(limit = 5): Promise<RecentMember[]> {
+  const supabase = createServiceRoleClient()
+  const { data } = await supabase
+    .from('members')
+    .select('id, member_name, company_name, status, created_at')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  return (data ?? []) as unknown as RecentMember[]
+}

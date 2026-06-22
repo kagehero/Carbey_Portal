@@ -5,7 +5,7 @@ import { listCustomers } from '@/lib/portal/crm'
 
 export const dynamic = 'force-dynamic'
 
-const field = 'rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-brand-400 focus:outline-none'
+const field = 'rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-brand-400 focus:outline-none'
 
 export default async function CrmPage({
   searchParams,
@@ -20,8 +20,8 @@ export default async function CrmPage({
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">CRM（顧客管理）</h1>
-          <p className="mt-1 text-sm text-gray-500">エンドユーザー(購入者) {customers.length} 件</p>
+          <h1 className="text-xl font-bold text-slate-900">CRM（顧客管理）</h1>
+          <p className="mt-1 text-sm text-slate-500">エンドユーザー(購入者) {customers.length} 件</p>
         </div>
         <Link
           href="/admin/crm/new"
@@ -34,15 +34,15 @@ export default async function CrmPage({
 
       <form className="mb-4 flex items-center gap-2" action="/admin/crm" method="get">
         <div className="relative">
-          <Search className="absolute left-2.5 top-2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-2.5 top-2 h-4 w-4 text-slate-400" />
           <input name="q" defaultValue={sp.q ?? ''} placeholder="氏名・メール・電話" className={`${field} pl-8`} />
         </div>
-        <button className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50">検索</button>
+        <button className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">検索</button>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50 text-left text-gray-500">
+          <thead className="border-b border-slate-200 bg-slate-50 text-left text-slate-500">
             <tr>
               <th className="px-4 py-3 font-medium">顧客名</th>
               <th className="px-4 py-3 font-medium">連絡先</th>
@@ -50,24 +50,24 @@ export default async function CrmPage({
               <th className="px-4 py-3 font-medium">登録日</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-slate-100">
             {customers.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-10 text-center text-gray-400">
+                <td colSpan={4} className="px-4 py-10 text-center text-slate-400">
                   顧客がいません。
                 </td>
               </tr>
             )}
             {customers.map((c) => (
-              <tr key={c.id} className="hover:bg-gray-50">
+              <tr key={c.id} className="hover:bg-slate-50">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/crm/${c.id}`} className="font-medium text-gray-900 hover:underline">
+                  <Link href={`/admin/crm/${c.id}`} className="font-medium text-slate-900 hover:underline">
                     {c.name}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-gray-600">{c.email ?? c.phone ?? '—'}</td>
-                <td className="px-4 py-3 text-gray-600">{c.address ?? '—'}</td>
-                <td className="px-4 py-3 text-gray-600">{new Date(c.created_at).toLocaleDateString('ja-JP')}</td>
+                <td className="px-4 py-3 text-slate-600">{c.email ?? c.phone ?? '—'}</td>
+                <td className="px-4 py-3 text-slate-600">{c.address ?? '—'}</td>
+                <td className="px-4 py-3 text-slate-600">{new Date(c.created_at).toLocaleDateString('ja-JP')}</td>
               </tr>
             ))}
           </tbody>
