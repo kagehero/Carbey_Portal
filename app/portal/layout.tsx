@@ -19,7 +19,7 @@ export default async function PortalLayout({ children }: { children: React.React
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-3">
           <div className="flex items-center gap-6">
             <Link href="/portal/dashboard" className="flex items-center">
-              <Logo variant="text" className="h-7 w-auto" priority />
+              <Logo variant="icon" className="h-8 w-8 rounded-lg" priority />
             </Link>
             <AdminNav items={items} />
           </div>
