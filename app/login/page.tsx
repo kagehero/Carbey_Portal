@@ -20,7 +20,6 @@ function LoginForm() {
   const [error, setError] = useState('')
   const router = useRouter()
   const params = useSearchParams()
-  const supabase = createClient()
 
   const initialError =
     params.get('error') === 'forbidden' ? 'この画面へのアクセス権限がありません。' : ''
@@ -30,6 +29,7 @@ function LoginForm() {
     setLoading(true)
     setError('')
     try {
+      const supabase = createClient()
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       const redirect = params.get('redirect')
