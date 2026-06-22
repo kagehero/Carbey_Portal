@@ -1,6 +1,8 @@
 # Carbey Portal
 
-Carbey の新プロジェクト。既存 [Carbey](../Carbey) と同じ技術スタック（Next.js 15 / React 19 / TypeScript / Tailwind / Supabase）で構成し、既存プロジェクトのAI機能を移植して実装する。
+Carbey の新プロジェクト（カーベイ FC 加盟店プラットフォーム）。既存 [Carbey](../Carbey) と同じ技術スタック（Next.js 15 / React 19 / TypeScript / Tailwind / Supabase）で構成し、既存プロジェクトのAI機能を移植して実装する。
+
+> 開発方針・設計判断・AI移植マップは [docs/architecture.md](docs/architecture.md) を参照。要求事項定義書 v1.2 に基づく Phase 1〜4 の指針。
 
 ## セットアップ
 
