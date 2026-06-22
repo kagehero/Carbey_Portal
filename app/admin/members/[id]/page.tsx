@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Mail, CheckCircle2 } from 'lucide-react'
 import { requireFeature } from '@/lib/auth/session'
 import { getMember, listPayments } from '@/lib/portal/members'
 import { listPlans } from '@/lib/portal/plans'
@@ -9,14 +9,21 @@ import {
   MEMBER_STATUS_STYLE,
   yen,
 } from '@/lib/portal/labels'
-import { updateMemberAction } from '../actions'
+import { updateMemberAction, inviteMemberAction } from '../actions'
 import MemberFormFields from '../MemberFormFields'
 
 export const dynamic = 'force-dynamic'
 
-export default async function MemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function MemberDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ invite?: string; msg?: string }>
+}) {
   await requireFeature('members')
   const { id } = await params
+  const sp = await searchParams
   const [member, plans, payments] = await Promise.all([getMember(id), listPlans(false), listPayments(id)])
   if (!member) notFound()
 
@@ -37,6 +44,51 @@ export default async function MemberDetailPage({ params }: { params: Promise<{ i
           {MEMBER_STATUS_LABEL[member.status]}
         </span>
         {member.company_name && <span className="text-sm text-gray-500">{member.company_name}</span>}
+      </div>
+
+      {/* 招待結果バナー */}
+      {sp.invite === 'sent' && (
+        <div className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
+          招待メールを送信しました。
+        </div>
+      )}
+      {sp.invite === 'smtp_unconfigured' && (
+        <div className="mb-4 rounded-lg bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+          SMTP が未設定のため招待メールを送信できません（環境変数 SMTP_HOST / SMTP_USER / SMTP_PASS）。
+        </div>
+      )}
+      {sp.invite === 'error' && (
+        <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          招待に失敗しました{sp.msg ? `: ${sp.msg}` : ''}
+        </div>
+      )}
+
+      {/* アカウント招待 */}
+      <div className="mb-6 flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4">
+        <div className="flex items-center gap-2 text-sm">
+          {member.user_id ? (
+            <>
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <span className="text-gray-700">ログインアカウント連携済み</span>
+            </>
+          ) : (
+            <>
+              <Mail className="h-4 w-4 text-gray-400" />
+              <span className="text-gray-500">未招待（ログインアカウント未連携）</span>
+            </>
+          )}
+        </div>
+        {member.email ? (
+          <form action={inviteMemberAction}>
+            <input type="hidden" name="id" value={member.id} />
+            <button className="flex items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-100">
+              <Mail className="h-4 w-4" />
+              {member.user_id ? '招待メールを再送' : '招待メールを送信'}
+            </button>
+          </form>
+        ) : (
+          <span className="text-xs text-gray-400">招待にはメールアドレスが必要です</span>
+        )}
       </div>
 
       {/* サマリ行 */}

@@ -26,3 +26,43 @@ export function getServiceRoleKey(): string {
   }
   return k
 }
+
+/** メールリンクの遷移先などに使うサイトURL。本番は環境変数、無ければリクエスト由来で補う。 */
+export function getSiteUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+  )
+}
+
+export type SmtpConfig = {
+  host: string
+  port: number
+  secure: boolean
+  user: string
+  pass: string
+  from: string
+}
+
+/** SMTP が設定済みか (未設定ならメール送信を行わずエラーを返す)。 */
+export function isSmtpConfigured(): boolean {
+  return !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
+}
+
+export function getSmtpConfig(): SmtpConfig {
+  const host = process.env.SMTP_HOST
+  const user = process.env.SMTP_USER
+  const pass = process.env.SMTP_PASS
+  if (!host || !user || !pass) {
+    throw new Error('SMTP is not configured (SMTP_HOST, SMTP_USER, SMTP_PASS)')
+  }
+  const port = parseInt(process.env.SMTP_PORT || '587', 10)
+  return {
+    host,
+    port,
+    secure: process.env.SMTP_SECURE === 'true' || port === 465,
+    user,
+    pass,
+    from: process.env.SMTP_FROM || user,
+  }
+}

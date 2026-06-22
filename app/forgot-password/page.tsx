@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, Mail } from 'lucide-react'
 import Logo from '@/components/Logo'
 
@@ -17,10 +16,16 @@ export default function ForgotPasswordPage() {
     setLoading(true)
     setError('')
     try {
-      const supabase = createClient()
-      const redirectTo = `${window.location.origin}/reset-password`
-      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
-      if (error) throw error
+      // 自前SMTP で送る API ルート (パターンX: Supabase generateLink + nodemailer)
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error === 'SMTP not configured' ? 'メール送信が未設定です。本部にお問い合わせください。' : '送信に失敗しました')
+      }
       setSent(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : '送信に失敗しました')
@@ -33,7 +38,7 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-navy-950 p-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl">
         <div className="mb-6 flex flex-col items-center">
-          <Logo variant="text" className="h-9 w-auto" priority />
+          <Logo variant="icon" className="h-12 w-12 rounded-xl" priority />
           <h1 className="mt-4 text-xl font-bold text-gray-900">パスワード再設定</h1>
           <p className="mt-1 text-center text-sm text-gray-500">
             登録メールアドレスに再設定リンクを送信します

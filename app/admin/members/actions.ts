@@ -3,8 +3,10 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { requireFeature } from '@/lib/auth/session'
-import { createMember, updateMember } from '@/lib/portal/members'
+import { createMember, updateMember, getMember } from '@/lib/portal/members'
 import { notifyAdmin } from '@/lib/portal/notifications'
+import { inviteMember } from '@/lib/portal/invite'
+import { isSmtpConfigured } from '@/lib/email/sendEmail'
 import type { MemberStatus, PaymentStatus } from '@/types/database'
 
 function str(v: FormDataEntryValue | null): string | null {
@@ -72,4 +74,29 @@ export async function updateMemberAction(formData: FormData) {
 
   revalidatePath(`/admin/members/${id}`)
   redirect(`/admin/members/${id}`)
+}
+
+/** 加盟店に招待メールを送る (要求書 5.1: メール+パスワード認証 / 招待フロー)。 */
+export async function inviteMemberAction(formData: FormData) {
+  await requireFeature('members')
+  const id = str(formData.get('id'))
+  if (!id) redirect('/admin/members')
+
+  if (!isSmtpConfigured()) {
+    redirect(`/admin/members/${id}?invite=smtp_unconfigured`)
+  }
+
+  const member = await getMember(id)
+  if (!member) redirect('/admin/members')
+
+  try {
+    await inviteMember(member)
+    await notifyAdmin('member_registered', '招待メール送信', `${member.member_name} を招待しました`)
+    revalidatePath(`/admin/members/${id}`)
+    redirect(`/admin/members/${id}?invite=sent`)
+  } catch (e) {
+    if (e instanceof Error && e.message.includes('NEXT_REDIRECT')) throw e
+    const msg = e instanceof Error ? e.message : 'unknown'
+    redirect(`/admin/members/${id}?invite=error&msg=${encodeURIComponent(msg)}`)
+  }
 }
