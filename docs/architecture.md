@@ -159,12 +159,29 @@ create policy ai_conv_admin_self_read on public.ai_conversations
 > AI機能は Phase 4。Phase 1〜3 の基盤（テナント・認証・業務DB）が無いと `lib/ai/` は動かない。
 > 今 `lib/ai/` をコピーしても一行も動かないため、現時点では移植しない。
 
-### Phase 1 着手時のチェックリスト（AI移植を見据えて）
+### Phase 1 着手時のチェックリスト（AI移植を見据えて）— ✅ 実装済み
 
-- [ ] 新システムのテーブルは `portal` スキーマ（または `portal_*` 接頭辞）に置く（論点X）
-- [ ] 加盟店・ロール・プランを `auth.users` と id で紐付ける membership 設計（論点Y）
-- [ ] `tenant_id`（加盟店ID）を業務テーブルの分離キーとして一貫導入（論点A の前提）
-- [ ] 既存 Carbey の市場テーブル（`inventories` 等）には**触れない**（参照のみ）
+- [x] 新システムのテーブルは `portal` スキーマに置く（論点X）→ `supabase/migrations/001_portal_schema.sql`
+- [x] 加盟店・ロール・プランを `auth.users` と id で紐付ける membership 設計（論点Y）→ `portal.memberships`
+- [x] `franchise_id`（= tenant_id）を業務テーブルの分離キーとして一貫導入（論点A の前提）
+- [x] 既存 Carbey の市場テーブル（`inventories` 等）には**触れない**（参照のみ）
+
+#### Phase 1 で実装したもの（実績）
+
+- **DB**: `portal` スキーマ（plans / franchises / memberships / contracts / crm_customers / crm_deals）+ RLS + ヘルパー関数（`portal.is_admin` / `portal.current_franchise_id` / `bootstrap_admin` / `attach_franchise_user`）
+- **認証**: middleware（セッション更新 + 保護領域リダイレクト）、ログイン、`/post-login`（ロール振り分け）、サインアウト
+- **権限ゲート**: `lib/auth/session.ts`（`requireAdmin` / `requireRole` / `apiRequireRole` など）
+- **本部画面**: `/admin/franchises`（一覧・詳細・登録フォーム、Server Action）
+- **加盟店画面**: `/portal/dashboard`（要求書 5.4 のウィジェット雛形。Phase 2/3/4 はプレースホルダ）
+
+#### Supabase クライアントの型解決メモ（重要・ハマりどころ）
+
+`portal` スキーマをデフォルトにするため `createClient<Database, 'portal'>(..., { db: { schema: 'portal' } })` を使う。
+この時、`types/database.ts` の `Database` 型に **`__InternalSupabase: { PostgrestVersion }` キーが無いと
+テーブル型が `never` に潰れる**（supabase-js 2.108 の `SupabaseClient` ジェネリック仕様）。
+また `@supabase/ssr` の `createServerClient` はスキーマ名ジェネリックを伝播しないことがあるため、
+`.select()` / `.maybeSingle<Row>()` / `.single<Row>()` で結果型を明示している。
+insert は `insert(input as never)` で回避（公開関数のシグネチャ側は `FranchiseInsert` で型安全）。
 
 ### Phase 4 着手時のチェックリスト（AI移植本番）
 
