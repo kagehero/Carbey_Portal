@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`}>
-      <body className="font-sans antialiased text-slate-800">{children}</body>
+      <body className="font-sans text-[15px] leading-relaxed text-slate-800">{children}</body>
     </html>
   );
 }

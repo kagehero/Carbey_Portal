@@ -36,7 +36,7 @@ export default async function MemberDetailPage({
       </Link>
 
       <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-navy-800 text-lg font-semibold text-white">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500 text-lg font-semibold text-white">
           {member.member_name.charAt(0)}
         </div>
         <div>

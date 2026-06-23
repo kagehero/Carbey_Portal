@@ -2,20 +2,16 @@
 
 import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowRight, Eye, EyeOff, Lock, Mail, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react'
-import Logo from '@/components/Logo'
-
-const HIGHLIGHTS = [
-  { icon: ShieldCheck, title: '安心の権限管理', desc: 'ロール別アクセスで安全に運用' },
-  { icon: Sparkles, title: 'AI 壁打ち', desc: '相場・需要を踏まえた仕入れ支援' },
-  { icon: TrendingUp, title: '収益を可視化', desc: '販売実績と利益をひと目で把握' },
-]
+import { Eye, EyeOff, Lock, Mail, ChevronDown, ShieldCheck, HelpCircle } from 'lucide-react'
+import Wordmark from '@/components/Wordmark'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
+  const [remember, setRemember] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -42,148 +38,137 @@ function LoginForm() {
     }
   }
 
-  const inputBase =
-    'w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-3 text-gray-900 placeholder-gray-400 transition focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-100'
+  const input =
+    'w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 placeholder-slate-400 transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100'
 
   return (
-    <div className="flex min-h-screen bg-white">
-      {/* 左: ブランド ショーケース (lg 以上で表示) */}
-      <div className="relative hidden w-1/2 overflow-hidden bg-navy-950 lg:block">
-        {/* グロー装飾 */}
-        <div
-          className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full opacity-60 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(241,90,90,0.35) 0%, transparent 70%)' }}
+    <div className="flex min-h-screen bg-slate-100">
+      {/* ===== 左: ブランドショーケース (ヒーロー画像 + ロゴオーバーレイ) ===== */}
+      <div className="relative hidden w-1/2 overflow-hidden bg-navy-900 lg:block">
+        <Image
+          src="/login-hero.png"
+          alt="CARBAY FC — データとAIで、中古車ビジネスを次のステージへ。"
+          fill
+          priority
+          sizes="50vw"
+          className="object-cover object-left"
         />
-        <div
-          className="pointer-events-none absolute -bottom-40 -right-24 h-[28rem] w-[28rem] rounded-full opacity-50 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.30) 0%, transparent 70%)' }}
-        />
-        {/* グリッド */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(255,255,255,.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.8) 1px, transparent 1px)',
-            backgroundSize: '44px 44px',
-          }}
-        />
-
-        <div className="relative flex h-full flex-col justify-between p-12">
-          <div className="flex items-center gap-3">
-            <Logo variant="icon" className="h-10 w-10 rounded-xl" priority />
-            <span className="text-xl font-bold tracking-tight text-white">Carbey</span>
-          </div>
-
-          <div>
-            <h1 className="text-4xl font-bold leading-tight text-white">
-              家から始める、
-              <br />
-              <span className="bg-gradient-to-r from-brand-400 to-accent-400 bg-clip-text text-transparent">
-                次世代の中古車ビジネス
-              </span>
-            </h1>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">
-              FC加盟店プラットフォーム。会員管理から AI 壁打ちまで、運営に必要な機能をひとつに。
-            </p>
-
-            <div className="mt-10 space-y-4">
-              {HIGHLIGHTS.map((h) => (
-                <div key={h.title} className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
-                    <h.icon className="h-5 w-5 text-accent-300" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-white">{h.title}</div>
-                    <div className="text-xs text-white/50">{h.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <p className="text-xs text-white/30">© {new Date().getFullYear()} Carbey. All rights reserved.</p>
-        </div>
       </div>
 
-      {/* 右: ログインフォーム */}
-      <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2">
-        <div className="w-full max-w-sm">
-          {/* モバイル用ロゴ (lg 未満) */}
-          <div className="mb-8 flex flex-col items-center lg:items-start">
-            <Logo variant="icon" className="h-11 w-11 rounded-xl lg:hidden" priority />
-            <h2 className="mt-4 text-2xl font-bold text-gray-900">ログイン</h2>
-            <p className="mt-1 text-sm text-gray-500">アカウント情報を入力してください</p>
+      {/* ===== 右: フォーム ===== */}
+      <div className="relative flex w-full flex-col items-center justify-center px-6 pb-16 pt-12 lg:w-1/2">
+        {/* 言語切替 */}
+        <div className="absolute right-6 top-6 flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-500">
+          <span>🌐</span>
+          <span>日本語</span>
+          <ChevronDown className="h-3.5 w-3.5" />
+        </div>
+
+        <div className="w-full max-w-md">
+          {/* モバイル用ロゴ */}
+          <div className="mb-8 lg:hidden">
+            <Wordmark size="md" />
           </div>
 
-          {(error || initialError) && (
-            <div className="mb-5 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error || initialError}
-            </div>
-          )}
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-7 shadow-card sm:p-9">
+            <h2 className="text-2xl font-bold text-slate-900">ログイン</h2>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-slate-500">
+              アカウントにログインして
+              <br />
+              プラットフォームを利用しましょう。
+            </p>
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">メールアドレス</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={inputBase}
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                />
+            {(error || initialError) && (
+              <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[13px] text-red-700">
+                {error || initialError}
               </div>
-            </div>
+            )}
 
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">パスワード</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={`${inputBase} pr-11`}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  aria-label={showPw ? 'パスワードを隠す' : 'パスワードを表示'}
-                >
-                  {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+            <form onSubmit={handleLogin} className="mt-6 space-y-4">
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-slate-700">メールアドレス</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
+                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={input} placeholder="メールアドレスを入力してください" autoComplete="email" />
+                </div>
               </div>
+
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-slate-700">パスワード</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
+                  <input type={showPw ? 'text' : 'password'} required value={password} onChange={(e) => setPassword(e.target.value)} className={input} placeholder="パスワードを入力してください" autoComplete="current-password" />
+                  <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" aria-label={showPw ? '隠す' : '表示'}>
+                    {showPw ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                  </button>
+                </div>
+                <div className="mt-2 text-right">
+                  <a href="/forgot-password" className="text-[13px] font-medium text-info-600 hover:underline">パスワードをお忘れの方</a>
+                </div>
+              </div>
+
+              <label className="flex items-center gap-2 text-[13px] text-slate-600">
+                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-brand-500 focus:ring-brand-400" />
+                ログインしたままにする
+              </label>
+
+              <button type="submit" disabled={loading} className="mt-1 w-full rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-500/20 transition hover:bg-brand-600 disabled:opacity-60">
+                {loading ? 'ログイン中...' : 'ログイン'}
+              </button>
+            </form>
+
+            {/* 区切り */}
+            <div className="my-5 flex items-center gap-3">
+              <span className="h-px flex-1 bg-slate-200" />
+              <span className="text-xs text-slate-400">または</span>
+              <span className="h-px flex-1 bg-slate-200" />
             </div>
 
-            <div className="flex justify-end">
-              <a href="/forgot-password" className="text-sm text-brand-600 hover:text-brand-700 hover:underline">
-                パスワードをお忘れですか？
-              </a>
-            </div>
-
+            {/* Google (招待制のため案内) */}
             <button
-              type="submit"
-              disabled={loading}
-              className="group flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-3 font-medium text-white shadow-lg shadow-brand-500/25 transition hover:bg-brand-600 hover:shadow-brand-500/40 disabled:opacity-60"
+              type="button"
+              onClick={() => setError('Googleログインは現在準備中です。本部発行のメール・パスワードでログインしてください。')}
+              className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              {loading ? 'ログイン中...' : 'ログイン'}
-              {!loading && <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />}
+              <GoogleIcon />
+              Googleでログイン
             </button>
-          </form>
 
-          <p className="mt-8 text-center text-xs text-gray-400">
-            ログインすることで利用規約に同意したものとみなされます。
-          </p>
+            <p className="mt-5 text-center text-[13px] text-slate-500">
+              アカウントをお持ちでない方は{' '}
+              <a href="/register" className="font-medium text-info-600 hover:underline">こちら</a>
+            </p>
+          </div>
+        </div>
+
+        {/* 信頼バッジ (右パネル最下部・横一列。カンプ準拠) */}
+        <div className="absolute inset-x-0 bottom-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-1.5 px-6 text-[11px] text-slate-400">
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <Lock className="h-3.5 w-3.5" />
+            SSLで安全に保護されています
+          </span>
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            24時間365日監視体制
+          </span>
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <HelpCircle className="h-3.5 w-3.5" />
+            サポートセンター
+          </span>
         </div>
       </div>
     </div>
+  )
+}
+
+function GoogleIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden>
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09Z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.23 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z" />
+      <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84Z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z" />
+    </svg>
   )
 }
 

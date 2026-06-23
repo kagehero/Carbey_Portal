@@ -1,15 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, Mail, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react'
-import Logo from '@/components/Logo'
+import Image from 'next/image'
+import { ArrowLeft, Mail, Send, ShieldCheck, Clock, Lock } from 'lucide-react'
+import Wordmark from '@/components/Wordmark'
+import AuthStepper from '@/components/auth/AuthStepper'
 
-const HIGHLIGHTS = [
-  { icon: ShieldCheck, title: '安心の権限管理', desc: 'ロール別アクセスで安全に運用' },
-  { icon: Sparkles, title: 'AI 壁打ち', desc: '相場・需要を踏まえた仕入れ支援' },
-  { icon: TrendingUp, title: '収益を可視化', desc: '販売実績と利益をひと目で把握' },
-]
+const STEPS = [{ label: 'メール送信' }, { label: 'メール確認' }, { label: '完了' }]
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -22,7 +19,6 @@ export default function ForgotPasswordPage() {
     setLoading(true)
     setError('')
     try {
-      // 自前SMTP で送る API ルート (パターンX: Supabase generateLink + nodemailer)
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,126 +40,95 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  const inputBase =
-    'w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-3 text-gray-900 placeholder-gray-400 transition focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-100'
+  const input =
+    'w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100'
 
   return (
-    <div className="flex min-h-screen bg-white">
-      {/* 左: ブランド ショーケース (lg 以上で表示) */}
-      <div className="relative hidden w-1/2 overflow-hidden bg-navy-950 lg:block">
-        {/* グロー装飾 */}
-        <div
-          className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full opacity-60 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(241,90,90,0.35) 0%, transparent 70%)' }}
-        />
-        <div
-          className="pointer-events-none absolute -bottom-40 -right-24 h-[28rem] w-[28rem] rounded-full opacity-50 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.30) 0%, transparent 70%)' }}
-        />
-        {/* グリッド */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(255,255,255,.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.8) 1px, transparent 1px)',
-            backgroundSize: '44px 44px',
-          }}
-        />
+    <div className="flex min-h-screen bg-slate-100">
+      {/* ===== 左: フォーム (白カード) ===== */}
+      <div className="relative flex w-full items-center justify-center px-6 py-10 lg:w-1/2">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-card sm:p-10">
+          <Wordmark size="md" />
 
-        <div className="relative flex h-full flex-col justify-between p-12">
-          <div className="flex items-center gap-3">
-            <Logo variant="icon" className="h-10 w-10 rounded-xl" priority />
-            <span className="text-xl font-bold tracking-tight text-white">Carbey</span>
+          <div className="mt-8">
+            <AuthStepper steps={STEPS} current={sent ? 1 : 0} />
           </div>
 
-          <div>
-            <h1 className="text-4xl font-bold leading-tight text-white">
-              家から始める、
-              <br />
-              <span className="bg-gradient-to-r from-brand-400 to-accent-400 bg-clip-text text-transparent">
-                次世代の中古車ビジネス
-              </span>
-            </h1>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">
-              FC加盟店プラットフォーム。会員管理から AI 壁打ちまで、運営に必要な機能をひとつに。
-            </p>
-
-            <div className="mt-10 space-y-4">
-              {HIGHLIGHTS.map((h) => (
-                <div key={h.title} className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
-                    <h.icon className="h-5 w-5 text-accent-300" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-white">{h.title}</div>
-                    <div className="text-xs text-white/50">{h.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <p className="text-xs text-white/30">© {new Date().getFullYear()} Carbey. All rights reserved.</p>
-        </div>
-      </div>
-
-      {/* 右: パスワード再設定フォーム */}
-      <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2">
-        <div className="w-full max-w-sm">
-          {/* モバイル用ロゴ (lg 未満) */}
-          <div className="mb-8 flex flex-col items-center lg:items-start">
-            <Logo variant="icon" className="h-11 w-11 rounded-xl lg:hidden" priority />
-            <h2 className="mt-4 text-2xl font-bold text-gray-900">パスワード再設定</h2>
-            <p className="mt-1 text-sm text-gray-500">登録メールアドレスに再設定リンクを送信します</p>
-          </div>
+          <h1 className="mt-8 text-2xl font-bold text-slate-900">パスワードをリセットします</h1>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500">
+            ご登録のメールアドレスを入力してください。
+            <br />
+            パスワードリセット用のリンクをお送りします。
+          </p>
 
           {sent ? (
-            <div className="rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
-              {email} に再設定リンクを送信しました。メールをご確認ください。
+            <div className="mt-6 rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
+              {email} にリセットリンクを送信しました。メールをご確認ください。
             </div>
           ) : (
             <>
               {error && (
-                <div className="mb-5 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  {error}
-                </div>
+                <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-[13px] text-red-700">{error}</div>
               )}
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="mt-6 space-y-5">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-700">メールアドレス</label>
+                  <label className="mb-1.5 block text-[13px] font-medium text-slate-700">メールアドレス</label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={inputBase}
-                      placeholder="you@example.com"
-                      autoComplete="email"
-                    />
+                    <Mail className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-400" />
+                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={input} placeholder="メールアドレスを入力してください" autoComplete="email" />
                   </div>
                 </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full rounded-xl bg-brand-500 px-4 py-3 font-medium text-white shadow-lg shadow-brand-500/25 transition hover:bg-brand-600 hover:shadow-brand-500/40 disabled:opacity-60"
-                >
-                  {loading ? '送信中...' : '再設定リンクを送信'}
+                <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-500/20 transition hover:bg-brand-600 disabled:opacity-60">
+                  <Send className="h-4 w-4" />
+                  {loading ? '送信中...' : 'リセット用リンクを送信'}
                 </button>
               </form>
             </>
           )}
 
-          <Link
-            href="/login"
-            className="mt-8 flex items-center justify-center gap-1 text-sm text-gray-500 hover:text-gray-900"
-          >
+          <a href="/login" className="mt-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-info-600 hover:underline">
             <ArrowLeft className="h-4 w-4" />
-            ログインへ戻る
-          </Link>
+            ログインページに戻る
+          </a>
+
+          {/* 安心ノート */}
+          <div className="mt-8 rounded-xl border border-slate-100 bg-slate-50 p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <ShieldCheck className="h-4 w-4 text-info-600" />
+              ご安心ください
+            </div>
+            <p className="mt-1.5 text-xs leading-relaxed text-slate-500">
+              ご入力いただいたメールアドレスが他の人に公開されることはありません。安全にパスワードをリセットできます。
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* ===== 右: イラスト + 特徴3点 ===== */}
+      <div className="relative hidden w-1/2 flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-info-50 via-slate-50 to-white px-10 lg:flex">
+        <Image src="/forgot_PW.png" alt="" width={240} height={240} priority className="h-60 w-60 object-contain" />
+        <h2 className="mt-8 text-2xl font-bold text-slate-900">メールをご確認ください</h2>
+        <p className="mt-3 max-w-sm text-center text-sm leading-relaxed text-slate-500">
+          パスワードリセット用のリンクをご登録のメールアドレスに送信しました。
+          メール内のリンクをクリックして、新しいパスワードを設定してください。
+        </p>
+
+        <div className="mt-10 grid max-w-md grid-cols-3 gap-4">
+          <Feature icon={<ShieldCheck className="h-5 w-5" />} title="安全なリセット" desc="有効期限付きリンクで安全にリセットできます" />
+          <Feature icon={<Clock className="h-5 w-5" />} title="有効期限は60分" desc="リンクの有効期限は60分間です" />
+          <Feature icon={<Lock className="h-5 w-5" />} title="安心のセキュリティ" desc="お客様の情報は安全に保護されています" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="text-center">
+      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-info-100 text-info-600">{icon}</div>
+      <p className="mt-2 text-[13px] font-semibold text-slate-700">{title}</p>
+      <p className="mt-1 text-[11px] leading-snug text-slate-500">{desc}</p>
     </div>
   )
 }
