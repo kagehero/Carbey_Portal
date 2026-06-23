@@ -61,6 +61,16 @@ export async function updateMember(id: string, patch: Partial<MemberInsert>): Pr
   if (error) throw new Error(error.message)
 }
 
+/**
+ * 加盟店本人による自己更新。user_id でスコープし、本人の行のみ更新する。
+ * 呼び出し側で連絡先系フィールドのみに patch を絞ること (契約・財務・ステータスは本部専用)。
+ */
+export async function updateOwnMember(userId: string, patch: Partial<MemberInsert>): Promise<void> {
+  const supabase = createServiceRoleClient()
+  const { error } = await supabase.from('members').update(patch as never).eq('user_id', userId)
+  if (error) throw new Error(error.message)
+}
+
 export async function listPayments(memberId: string): Promise<PaymentRow[]> {
   const supabase = createServiceRoleClient()
   const { data, error } = await supabase
