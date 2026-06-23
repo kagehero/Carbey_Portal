@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { Eye, EyeOff, Lock, Mail, ChevronDown } from 'lucide-react'
+import { Eye, EyeOff, Lock, Mail, ChevronDown, ShieldCheck, HelpCircle } from 'lucide-react'
 import Wordmark from '@/components/Wordmark'
 
 function LoginForm() {
@@ -43,7 +43,7 @@ function LoginForm() {
 
   return (
     <div className="flex min-h-screen bg-slate-100">
-      {/* ===== 左: ブランドショーケース (ヒーロー画像 1枚で完結) ===== */}
+      {/* ===== 左: ブランドショーケース (ヒーロー画像 + ロゴオーバーレイ) ===== */}
       <div className="relative hidden w-1/2 overflow-hidden bg-navy-900 lg:block">
         <Image
           src="/login-hero.png"
@@ -56,7 +56,7 @@ function LoginForm() {
       </div>
 
       {/* ===== 右: フォーム ===== */}
-      <div className="relative flex w-full items-center justify-center px-6 py-10 lg:w-1/2">
+      <div className="relative flex w-full flex-col items-center justify-center px-6 pb-16 pt-12 lg:w-1/2">
         {/* 言語切替 */}
         <div className="absolute right-6 top-6 flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-500">
           <span>🌐</span>
@@ -71,11 +71,11 @@ function LoginForm() {
           </div>
 
           <div className="rounded-2xl border border-slate-200/80 bg-white p-7 shadow-card sm:p-9">
-            <h2 className="text-xl font-bold text-slate-900">ログイン</h2>
-            <p className="mt-1 text-[13px] text-slate-500">
+            <h2 className="text-2xl font-bold text-slate-900">ログイン</h2>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-slate-500">
               アカウントにログインして
-              <br className="sm:hidden" />
-              プラットフォームを利用しましょう
+              <br />
+              プラットフォームを利用しましょう。
             </p>
 
             {(error || initialError) && (
@@ -103,7 +103,7 @@ function LoginForm() {
                   </button>
                 </div>
                 <div className="mt-2 text-right">
-                  <a href="/forgot-password" className="text-[13px] font-medium text-brand-600 hover:underline">パスワードをお忘れの方</a>
+                  <a href="/forgot-password" className="text-[13px] font-medium text-info-600 hover:underline">パスワードをお忘れの方</a>
                 </div>
               </div>
 
@@ -136,9 +136,25 @@ function LoginForm() {
 
             <p className="mt-5 text-center text-[13px] text-slate-500">
               アカウントをお持ちでない方は{' '}
-              <a href="/forgot-password" className="font-medium text-brand-600 hover:underline">こちら</a>
+              <a href="/register" className="font-medium text-info-600 hover:underline">こちら</a>
             </p>
           </div>
+        </div>
+
+        {/* 信頼バッジ (右パネル最下部・横一列。カンプ準拠) */}
+        <div className="absolute inset-x-0 bottom-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-1.5 px-6 text-[11px] text-slate-400">
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <Lock className="h-3.5 w-3.5" />
+            SSLで安全に保護されています
+          </span>
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            24時間365日監視体制
+          </span>
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <HelpCircle className="h-3.5 w-3.5" />
+            サポートセンター
+          </span>
         </div>
       </div>
     </div>
