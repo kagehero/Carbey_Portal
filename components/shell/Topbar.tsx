@@ -35,7 +35,7 @@ export default function Topbar({
           <div className="text-sm font-medium text-slate-800">{userName}</div>
           <div className="text-[11px] text-slate-500">{roleLabel}</div>
         </div>
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-navy-800 text-sm font-semibold text-white">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white">
           {userName.charAt(0).toUpperCase()}
         </div>
         <SignOutButton />

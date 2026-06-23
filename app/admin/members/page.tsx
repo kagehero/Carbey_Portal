@@ -68,7 +68,7 @@ export default async function MembersPage({
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
-        <button className="rounded-lg bg-navy-800 px-4 py-2 text-sm font-medium text-white hover:bg-navy-700">
+        <button className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
           絞り込む
         </button>
       </form>

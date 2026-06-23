@@ -3,11 +3,22 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    /* くっきりしたテキストレンダリング (ライト背景でシャープに) */
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+    text-rendering: optimizeLegibility;
+  }
   body {
     @apply bg-slate-50 text-slate-800;
   }
   h1, h2, h3, h4 {
-    @apply tracking-tight;
+    @apply font-bold tracking-tight text-slate-900;
+  }
+  /* ダーク面では薄文字が潰れるのでアンチエイリアスを効かせる */
+  .on-dark {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 

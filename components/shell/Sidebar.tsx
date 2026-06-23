@@ -50,14 +50,14 @@ function NavLink({ entry, active }: { entry: NavEntry; active: boolean }) {
   if (entry.soon) {
     return (
       <div
-        className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-slate-400/70"
+        className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-slate-400"
         title="Phase 2以降で実装予定"
       >
         <span className="flex items-center gap-3">
           <Icon className="h-[18px] w-[18px]" />
           {entry.label}
         </span>
-        <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-slate-500">近日</span>
+        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-400">近日</span>
       </div>
     )
   }
@@ -67,11 +67,11 @@ function NavLink({ entry, active }: { entry: NavEntry; active: boolean }) {
       className={cn(
         'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
         active
-          ? 'bg-brand-500/15 text-white ring-1 ring-inset ring-brand-500/30'
-          : 'text-slate-300 hover:bg-white/5 hover:text-white',
+          ? 'bg-brand-50 text-brand-700'
+          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
       )}
     >
-      <Icon className={cn('h-[18px] w-[18px]', active ? 'text-brand-400' : 'text-slate-400')} />
+      <Icon className={cn('h-[18px] w-[18px]', active ? 'text-brand-600' : 'text-slate-400')} />
       {entry.label}
     </Link>
   )
@@ -109,19 +109,21 @@ export default function Sidebar({
 
   const content = (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2.5 px-5 py-5">
+      <div className="flex items-center gap-2.5 border-b border-slate-100 px-5 py-[18px]">
         <Logo variant="icon" className="h-8 w-8 rounded-lg" priority />
         <div className="leading-tight">
-          <div className="text-sm font-bold text-white">Carbey</div>
+          <div className="text-sm font-bold text-slate-900">
+            CARBAY <span className="text-brand-500">FC</span>
+          </div>
           <div className="text-[11px] text-slate-400">{brandLabel}</div>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-3 pb-4 scrollbar-slim">
+      <div className="flex-1 overflow-y-auto px-3 py-4 scrollbar-slim">
         <NavList items={primary} />
         {secondary && <NavList items={secondary.items} sectionLabel={secondary.label} />}
       </div>
-      <div className="border-t border-white/5 px-5 py-3">
-        <p className="text-[11px] text-slate-500">© {new Date().getFullYear()} Carbey</p>
+      <div className="border-t border-slate-100 px-5 py-3">
+        <p className="text-[11px] text-slate-400">© {new Date().getFullYear()} CARBAY Co., Ltd.</p>
       </div>
     </div>
   )
@@ -137,17 +139,19 @@ export default function Sidebar({
         <Menu className="h-5 w-5" />
       </button>
 
-      {/* デスクトップ: 固定サイドバー */}
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 bg-navy-800 lg:block">{content}</aside>
+      {/* デスクトップ: 固定サイドバー (白基調) */}
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 border-r border-slate-200 bg-white lg:block">
+        {content}
+      </aside>
 
       {/* モバイル: ドロワー */}
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-slate-900/50" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-72 bg-navy-800">
+          <div className="absolute inset-0 bg-slate-900/40" onClick={() => setOpen(false)} />
+          <aside className="absolute inset-y-0 left-0 w-72 bg-white shadow-xl">
             <button
               onClick={() => setOpen(false)}
-              className="absolute right-3 top-3 rounded-lg p-1.5 text-slate-400 hover:bg-white/5"
+              className="absolute right-3 top-3 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
               aria-label="閉じる"
             >
               <X className="h-5 w-5" />
