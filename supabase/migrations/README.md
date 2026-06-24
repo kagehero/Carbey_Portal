@@ -56,8 +56,12 @@ CLI/セルフホストの場合は PostgREST の `db-schemas`（環境変数 `PG
    （Project Settings → API → Exposed schemas に `portal` を追加）。
    ※ 管理者登録だけなら手順3のスクリプトで完結するが、ログイン後の画面表示には公開が必須。
 
-5. crm_staff / chat_only / member ユーザーは以下で紐付け:
+5. crm_staff / chat_only ユーザーは、本部管理者でログイン後に
+   **権限管理画面（`/admin/permissions`）から招待・ロール割り当て**できる。
+   SQL で直接紐付ける場合は以下:
 
    ```sql
    select portal.attach_user('<user_id>', 'crm_staff', 'スタッフ名', 'staff@example.com');
    ```
+
+   加盟店（member）は会員管理画面から招待される。
